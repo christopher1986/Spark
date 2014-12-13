@@ -33,7 +33,7 @@ class CompositeComparator implements ComparatorInterface
     /**
      * Construct a CompositeComparator.
      *
-     * @param array|Traversable|null $comparators (options) a collection containing one or more comparators.
+     * @param array|Traversable|null $comparators (optional) a collection containing one or more comparators.
      */
     public function __construct($comparators = null)
     {
