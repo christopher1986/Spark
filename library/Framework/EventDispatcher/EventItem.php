@@ -83,7 +83,7 @@ class EventItem implements Comparable
      *
      * @return int the priority of the listener.
      */
-    public function getPrioriy()
+    public function getPriority()
     {
         return $this->priority;
     }
@@ -94,10 +94,10 @@ class EventItem implements Comparable
     public function compareTo($obj)
     {
         if ($obj instanceof EventItem) {
-            if ($obj->getPrioriy() == $this->getPrioriy()) {
+            if ($obj->getPriority() == $this->getPriority()) {
                 return 0;
             }
-            return ($this->getPrioriy() > $obj->getPrioriy()) ? 1 : -1;
+            return ($this->getPriority() > $obj->getPriority()) ? 1 : -1;
         }
         return 0;
     }
