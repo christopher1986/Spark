@@ -60,7 +60,7 @@ class StreamReader extends StringReader
      */
     public function __construct($stream)
     {
-        if ($content = $this->setStreamContent($stream)) {
+        if ($content = $this->getStreamContent($stream)) {
             $this->setContent($content);
         }
     }
