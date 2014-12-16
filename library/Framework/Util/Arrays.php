@@ -39,7 +39,7 @@
 
 namespace Framework\Util;
 
-use Framework\Sort\Comparator\ComparatorInterface;
+use Framework\Common\Comparator\ComparatorInterface;
 
 /**
  * This class contains various methods for normalizing and testing arrays.

@@ -37,25 +37,31 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Sort\Comparator;
+namespace Framework\Common\Comparator;
 
 /**
- * A comparison function, which allows the ordering on a collection of objects. A comparator is specifically designed to work with 
- * user-defined comparison functions that are built-in to the PHP programming language. So in order to sort a collection of objects 
- * the {@link ComparatorInterface::compare($firstValue, $secondValue} method should be passed to a sort function (such as usort).
+ * A comparator that is capable of ordering strings.
  *
  * @author Chris Harris
- * @version 1.0.0
+ * @verson 1.0.0
  */
-interface ComparatorInterface
+class StringComparator extends AbstractComparator
 {
     /**
-     * Compares both arguments for order. Returns a negative integer, zero or positive integer as the first argument is less than, 
-     * equal to, or greater than the second. 
-     *
-     * @param mixed $firstValue the first value to be compared.
-     * @param mixed $secondValue the second value to be compared.
-     * @return int a negative, zero or positive integer as the first argument is less than, equal to or greater than the second.         
+     * {@inheritDoc}
      */
-    public function compare($firstValue, $secondValue);
+    public function accepts($firstValue, $secondValue)
+    {
+        return (is_string($firstValue) && is_string($secondValue));
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected function internalCompare($firstValue, $secondValue)
+    {
+        return strcmp($firstValue, $secondValue);
+    }
+
+
 }

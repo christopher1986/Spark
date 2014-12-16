@@ -37,49 +37,25 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Sort\Comparator;
+namespace Framework\Common\Comparator;
 
 /**
- * This class provides a skeleton implementation of the Comparable interface, to minimize the effort required to implement this interface.
- *
- * In order to use this class a developer only needs to implements the abstract methods which define if a comparator can handle both values
- * and if so how both values should be ordered.
+ * A comparison function, which allows the ordering on a collection of objects. A comparator is specifically designed to work with 
+ * user-defined comparison functions that are built-in to the PHP programming language. So in order to sort a collection of objects 
+ * the {@link ComparatorInterface::compare($firstValue, $secondValue} method should be passed to a sort function (such as usort).
  *
  * @author Chris Harris
  * @version 1.0.0
  */
-abstract class AbstractComparator implements ComparatorInterface
+interface ComparatorInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function compare($firstValue, $secondValue)
-    {
-        $retval = 0;
-        if ($this->accepts($firstValue, $secondValue)) {
-            $retval = $this->internalCompare($firstValue, $secondValue);
-        }
-        return $retval;
-    }
-    
-    /**
-     * Returns true if this comparator is capable comparing both values, otherwise false should be returned allowing another comparator
-     * a change to compare both values.
-     * 
-     * @param mixed $firstValue the first value to be compared.
-     * @param mixed $secondValue the second value to be compared.
-     * @return bool true if a comparator is capable of comparing both values, otherwise false.
-     */
-    public abstract function accepts($firstValue, $secondValue);
-    
     /**
      * Compares both arguments for order. Returns a negative integer, zero or positive integer as the first argument is less than, 
      * equal to, or greater than the second. 
      *
      * @param mixed $firstValue the first value to be compared.
      * @param mixed $secondValue the second value to be compared.
-     * @return int a negative, zero or positive integer as the first argument is less than, equal to or greater than the second.
-     *              
+     * @return int a negative, zero or positive integer as the first argument is less than, equal to or greater than the second.         
      */
-    protected abstract function internalCompare($firstValue, $secondValue);
+    public function compare($firstValue, $secondValue);
 }

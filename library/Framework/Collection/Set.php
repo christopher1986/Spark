@@ -2,6 +2,8 @@
 
 namespace Framework\Collection;
 
+use Framework\Common\Equatable;
+
 /**
  * This class implements the {@see SetInterface}, and is backed by a native array.
  * the order at which elements are added remains unchanged during the lifetime of 
@@ -17,7 +19,7 @@ class Set extends AbstractSet
      *
      * @var array
      */
-    private $data = array();
+    private $items = array();
 
     /**
      * Indicate if the end of the array has been reached.
@@ -29,12 +31,12 @@ class Set extends AbstractSet
     /**
      * Construct a new Set.
      *
-     * @param mixed $data one or more elements to add to the set, or null.
+     * @param mixed $items one or more elements to add to the set, or null.
      */
-    public function __construct($data = null) 
+    public function __construct($items = null) 
     {
-        if (null !== $data) {
-            $elements = (!is_array($data) && !($data instanceof \Traversable)) ? array($data) : $data;
+        if (null !== $items) {
+            $elements = (!is_array($items) && !($items instanceof \Traversable)) ? array($items) : $items;
             $this->addAll($elements);
         }
     }
@@ -46,7 +48,7 @@ class Set extends AbstractSet
     {
         $modified = false;
         if (!$this->contains($element)) {
-            $this->data[] = $element;
+            $this->items[] = $element;
             $modified = true;
         }
         return $modified;
@@ -57,7 +59,17 @@ class Set extends AbstractSet
      */
     public function contains($element)
     {
-        return (in_array($element, $this->data));
+        $contains = false;
+        if ($element instanceof Equatable) {
+            foreach ($this->items as $item) {
+                if ($contains = $element->equals($item)) {
+                    break;
+                }
+            }
+        } else {
+            $contains = in_array($element, $this->items);
+        }
+        return $contains;
     }
     
     /**
@@ -66,8 +78,8 @@ class Set extends AbstractSet
     public function remove($element)
     {
         $modified = false;
-        if (false !== ($index = array_search($element, $this->data))) {
-            unset($this->data[$index]);
+        if (false !== ($index = array_search($element, $this->items))) {
+            unset($this->items[$index]);
             $modified = true;
         }
         return $modified;
@@ -78,7 +90,7 @@ class Set extends AbstractSet
      */
     public function clear()
     {
-        $this->data = array();
+        $this->items = array();
     }
     
     /**
@@ -86,7 +98,7 @@ class Set extends AbstractSet
      */
     public function toArray()
     {
-        return $this->data;
+        return $this->items;
     }
     
     /**
@@ -96,7 +108,7 @@ class Set extends AbstractSet
      */
     public function count()
     {
-        return (count($this->data));
+        return (count($this->items));
     }
     
     /**
@@ -106,7 +118,7 @@ class Set extends AbstractSet
      */
     public function current()
     {
-        return current($this->data);
+        return current($this->items);
     }
     
     /**
@@ -116,7 +128,7 @@ class Set extends AbstractSet
      */
     public function key()
     {
-        return key($this->data);
+        return key($this->items);
     }
     
     /**
@@ -126,7 +138,7 @@ class Set extends AbstractSet
      */
     public function next()
     {
-        $this->valid = (false !== next($this->data)); 
+        $this->valid = (false !== next($this->items)); 
     }
     
     /**
@@ -136,7 +148,7 @@ class Set extends AbstractSet
      */
     public function rewind()
     {
-        $this->valid = (false !== reset($this->data));
+        $this->valid = (false !== reset($this->items));
     }
     
     /**

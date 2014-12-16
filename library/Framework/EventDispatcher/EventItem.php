@@ -39,7 +39,7 @@
 
 namespace Framework\EventDispatcher;
 
-use Framework\Sort\Comparable;
+use Framework\Common\Comparable;
 
 /**
  * The EventItem is reponsible for storing event listeners. The priority of an EventItem is used to determine it's position 

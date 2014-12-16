@@ -37,34 +37,49 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Sort\Comparator;
+namespace Framework\Common\Comparator;
 
 /**
- * A comparator that is capable of ordering numeric values.
+ * This class provides a skeleton implementation of the Comparable interface, to minimize the effort required to implement this interface.
+ *
+ * In order to use this class a developer only needs to implements the abstract methods which define if a comparator can handle both values
+ * and if so how both values should be ordered.
  *
  * @author Chris Harris
- * @verson 1.0.0
+ * @version 1.0.0
  */
-class NumericComparator extends AbstractComparator
+abstract class AbstractComparator implements ComparatorInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function accepts($firstValue, $secondValue)
+    public function compare($firstValue, $secondValue)
     {
-        return (is_numeric($firstValue) && is_numeric($secondValue));
+        $retval = 0;
+        if ($this->accepts($firstValue, $secondValue)) {
+            $retval = $this->internalCompare($firstValue, $secondValue);
+        }
+        return $retval;
     }
     
     /**
-     * {@inheritDoc}
+     * Returns true if this comparator is capable comparing both values, otherwise false should be returned allowing another comparator
+     * a change to compare both values.
+     * 
+     * @param mixed $firstValue the first value to be compared.
+     * @param mixed $secondValue the second value to be compared.
+     * @return bool true if a comparator is capable of comparing both values, otherwise false.
      */
-    protected function internalCompare($firstValue, $secondValue)
-    {
-        if ($firstValue == $secondValue) {
-            return 0;
-        }        
-        return ($firstValue > $secondValue) ? 1 : -1;
-    }
-
-
+    public abstract function accepts($firstValue, $secondValue);
+    
+    /**
+     * Compares both arguments for order. Returns a negative integer, zero or positive integer as the first argument is less than, 
+     * equal to, or greater than the second. 
+     *
+     * @param mixed $firstValue the first value to be compared.
+     * @param mixed $secondValue the second value to be compared.
+     * @return int a negative, zero or positive integer as the first argument is less than, equal to or greater than the second.
+     *              
+     */
+    protected abstract function internalCompare($firstValue, $secondValue);
 }

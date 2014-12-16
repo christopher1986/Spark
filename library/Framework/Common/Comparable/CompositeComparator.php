@@ -37,7 +37,7 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Sort\Comparator;
+namespace Framework\Common\Comparator;
 
 use Framework\Collection\ArrayList;
 

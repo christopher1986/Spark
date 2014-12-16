@@ -37,22 +37,22 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Sort\Comparator;
+namespace Framework\Common\Comparator;
 
 /**
- * A comparator that is capable of ordering strings.
+ * A comparator that is capable of ordering numeric values.
  *
  * @author Chris Harris
  * @verson 1.0.0
  */
-class StringComparator extends AbstractComparator
+class NumericComparator extends AbstractComparator
 {
     /**
      * {@inheritDoc}
      */
     public function accepts($firstValue, $secondValue)
     {
-        return (is_string($firstValue) && is_string($secondValue));
+        return (is_numeric($firstValue) && is_numeric($secondValue));
     }
     
     /**
@@ -60,7 +60,10 @@ class StringComparator extends AbstractComparator
      */
     protected function internalCompare($firstValue, $secondValue)
     {
-        return strcmp($firstValue, $secondValue);
+        if ($firstValue == $secondValue) {
+            return 0;
+        }        
+        return ($firstValue > $secondValue) ? 1 : -1;
     }
 
 

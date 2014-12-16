@@ -39,10 +39,10 @@
 
 namespace Framework\Collection;
 
-use Framework\Sort\Comparator\ComparableComparator;
-use Framework\Sort\Comparator\CompositeComparator;
-use Framework\Sort\Comparator\NumericComparator;
-use Framework\Sort\Comparator\StringComparator;
+use Framework\Common\Comparator\ComparableComparator;
+use Framework\Common\Comparator\CompositeComparator;
+use Framework\Common\Comparator\NumericComparator;
+use Framework\Common\Comparator\StringComparator;
 use Framework\Util\Arrays;
 
 class PriorityList implements PriorityListInterface
