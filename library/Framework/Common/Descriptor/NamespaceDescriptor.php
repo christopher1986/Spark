@@ -45,10 +45,16 @@ use SplFileObject;
 use Framework\Io\Exception\AccessDeniedException;
 use Framework\Scanner\PhpScanner;
 
+/**
+ * 
+ *
+ * @author Chris Harris 
+ * @version 1.0.0
+ */
 class NamespaceDescriptor
 {
     /**
-     *  A class whose namespace will be introspected.
+     *  A class whose namespace to describe.
      * 
      * @var ReflectionClass
      */
@@ -76,14 +82,21 @@ class NamespaceDescriptor
     private $includes = array();
 
     /**
-     * A collection of classes within the namespace.
+     * A collection of classes contained within the namespace.
      *
      * @var array
      */
     private $classNames = array();
 
     /**
-     * A flag to indicate if scanning has occurred.
+     * Object to read the contents of the file containing the namespace.
+     *
+     * @var SplFileObject
+     */
+    private $fileObject;
+
+    /**
+     * A flag to indicate if the namespace has been introspected.
      *
      * @var bool
      */
@@ -92,60 +105,26 @@ class NamespaceDescriptor
     /**
      * Create a NamespaceDescriptor.
      *
-     * @param ReflectionClass $class a class whose namespace to introspect.
+     * @param string|ReflectionClass $class the class whose namespace to describe.
      */
-    public function __construct(ReflectionClass $reflClass)
-    {
-        $this->reflClass = $reflClass;
+    public function __construct($class)
+    {    
+        $reflClass = ($class instanceof ReflectionClass) ? $class : new ReflectionClass($class);
+        $this->setReflectedClass($reflClass);
         $this->introspect();
     }
     
     /**
-     * Introspects the file in which the class has been defined.
+     * Returns the name of the namespace.
      *
-     * @return void
+     * @return string the name of the namespace. 
      */
-    private function introspect()
+    public function getNamespace()
     {
-        if ($this->hasIntrospected) {
-            return;
+        if ($this->namespace === null) {
+            $this->namespace = $this->getReflectedClass()->getNamespaceName();
         }
-        
-        $scanner = new PhpScanner($this->getFileContent());
-        $tokens = $scanner->scan();
-        
-        $withinNamespace = ($this->getReflectedClass()->inNamespace()) ? false : true;
-        foreach ($tokens as $token) {
-            if ($token->identify() == PhpScanner::T_NAMESPACE) {
-                $withinNamespace = ($token->getValue() === $this->getNamespace());
-            }
-        
-            if (!$withinNamespace) {
-                continue;
-            }
-            
-            switch ($token->identify()) {
-                case PhpScanner::T_USE_STATEMENT:
-                    $this->uses[] = array('use' => $token->getValue(), 'as' => null);
-                    break;
-                case PhpScanner::T_AS_STATEMENT:
-                    // move to last element.
-                    end($this->uses);
-                    // get key for this element.
-                    $key = key($this->uses);
-                    // store alias for last use statement.
-                    $this->uses[$key]['as'] = $token->getValue();
-                case PhpScanner::T_INCLUDE_STATEMENT:
-                    $this->includes[] = $token->getValue();
-                    break;
-                case PhpScanner::T_CLASS_NAME:
-                    $this->classNames[] = $token->getValue();
-                    break;
-                
-            }
-        }
-        
-        $this->hasIntrospected = true;
+        return $this->namespace;
     }
     
     /**
@@ -193,26 +172,78 @@ class NamespaceDescriptor
     }
     
     /**
-     * Returns the class whose namespace will be introspected.
+     * Set a reflection object of the class whose namespace is introspected.
      *
-     * @return ReflectionClass the class whose namespace will be introspected.
+     * @param ReflectionClass $reflClass a reflection class.
      */
-    public function getReflectedClass()
-    {
-        return $this->reflClass;
+    private function setReflectedClass(ReflectionClass $reflClass)
+    {        
+        if ($reflClass === null) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a ReflectionClass as argument; received "null"',
+                __METHOD__
+            ));
+        }
+    
+        $this->reflClass = $reflClass;
     }
     
     /**
-     * Returns the name of the namespace.
+     * Returns a reclection object of the class whose namespace is introspected.
      *
-     * @return string the name of the namespace. 
+     * @return ReflectionClass a reflection class.
      */
-    public function getNamespace()
+    private function getReflectedClass()
     {
-        if ($this->namespace === null) {
-            $this->namespace = $this->getReflectedClass()->getNamespaceName();
+        return $this->reflClass;
+    }
+
+    /**
+     * Introspects the file in which the class has been defined.
+     *
+     * @return void
+     */
+    private function introspect()
+    {
+        if ($this->hasIntrospected) {
+            return;
         }
-        return $this->namespace;
+        
+        $scanner = new PhpScanner($this->getFileContent());
+        $tokens = $scanner->scan();
+        
+        $withinNamespace = ($this->getReflectedClass()->inNamespace()) ? false : true;
+        foreach ($tokens as $token) {
+            if ($token->identify() == PhpScanner::T_NAMESPACE) {
+                $withinNamespace = ($token->getValue() === $this->getNamespace());
+            }
+        
+            if (!$withinNamespace) {
+                continue;
+            }
+            
+            switch ($token->identify()) {
+                case PhpScanner::T_USE_STATEMENT:
+                    $this->uses[] = array('use' => $token->getValue(), 'as' => null);
+                    break;
+                case PhpScanner::T_AS_STATEMENT:
+                    // move to last use statement.
+                    end($this->uses);
+                    // get key for this statement.
+                    $key = key($this->uses);
+                    // store alias for last statement.
+                    $this->uses[$key]['as'] = $token->getValue();
+                case PhpScanner::T_INCLUDE_STATEMENT:
+                    $this->includes[] = $token->getValue();
+                    break;
+                case PhpScanner::T_CLASS_NAME:
+                    $this->classNames[] = $token->getValue();
+                    break;
+                
+            }
+        }
+        
+        $this->hasIntrospected = true;
     }
     
     /**
@@ -227,7 +258,7 @@ class NamespaceDescriptor
      */
     private function getFileContent($lineNumber = -1)
     {
-        $fileObject = new SplFileObject($this->getReflectedClass()->getFileName());
+        $fileObject = $this->getFileObject();
         if (!$fileObject->isReadable()) {
             throw new AccessDeniedException($filename, 'unable to read file, make sure the file has read permissions.');
         }
@@ -243,5 +274,19 @@ class NamespaceDescriptor
         }
         
         return $content;
+    }
+    
+    /**
+     * Returns an object oriented interface for the file in which the class has been defined.
+     *
+     * @return SplFileObject an object oriented interface for a file.
+     * @link http://php.net/manual/en/class.splfileobject.php
+     */
+    private function getFileObject()
+    {
+        if ($this->fileObject === null) {
+            $this->fileObject = new SplFileObject($this->getReflectedClass()->getFileName());
+        }
+        return $this->fileObject;
     }
 }

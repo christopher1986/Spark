@@ -37,35 +37,54 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Common\Reflection;
+namespace Framework\Common\Descriptor;
 
-use SplFileObject;
+use ReflectionClass;
+
+use Framework\Cache\ArrayStorage;
 use Framework\Common\Annotation\AnnotationScanner;
-use Framework\Common\Descriptor\NamespaceDescriptor;
-use Framework\Scanner\PhpScanner;
 
-class ClassReflection extends \ReflectionClass
+/**
+ * 
+ *
+ * @author Chris Harris 
+ * @version 1.0.0
+ */
+class ClassDescriptor
 {
     /**
-     * A collection of annotations.
+     * A cache to hold namespace descriptors.
+     *
+     * @var ArrayStorage
+     */
+    private static $cache;
+
+    /**
+     * A collection of annotations for this class.
      *
      * @var array
      */
-    private $annotations;
+    private $annotations = array();
     
     /**
-     * A file object.
+     * Create a ClassDescriptor.
      *
-     * @var SplFileObject
+     * @param string|ReflectionClass $class the class to describe.
      */
-    private $file;
+    public function __construct($class)
+    {    
+        $reflClass = ($class instanceof ReflectionClass) ? $class : new ReflectionClass($class);
+        $this->setReflectedClass($reflClass);
+    }
     
     public function getAnnotations()
     {
-        $content = $this->getFileContent();
+        $namespace = $this->getNamespace();
         
-        $descriptor = new NamespaceDescriptor($this);
-    
+        echo '<pre>';
+        var_dump($namespace->getUseStatements());
+        echo '</pre>';
+        
         if ($this->annotations === null) {
             $scanner = new AnnotationScanner($this->getDocComment());
             $this->annotations = $scanner->scan();
@@ -74,43 +93,59 @@ class ClassReflection extends \ReflectionClass
     }
     
     /**
-     * Returns the content of the file in which the class has been defined.
+     * Returns a namespace descriptor for this class.
      *
-     * Unlike functions such as {@link file_get_contents} that reads an entire file into a string
-     * this method will read the file line-by-line. Although reading a file line-by-line is slower
-     * it will most definitely use less memory in doing so.
-     *
-     * @param int $lineNumber the maximum number of lines to read.
-     * @return string the content of the file, or an empty string if there is nothing to read.
+     * @return NamespaceDescriptor an object that describes the namespace of this class.
      */
-    public function getFileContent($lineNumber = -1)
+    public function getNamespace()
     {
-        $file = $this->getFile();
+        $cacheId = md5($this->getReflectedClass()->getFileName() . $this->getReflectedClass()->getName());
         
-        $lineCount = 0;
-        $content = '';
-        while (!$file->eof()) {
-            // reached the maximum number of lines to read.
-            if ($lineNumber >= 0 && $lineCount++ == $lineNumber) {
-                break;
-            }
-            
-            $content .= $file->fgets();
+        $storage = $this->getCache(); 
+        if (!$storage->has($cacheId)) {
+            $storage->add($cacheId, new NamespaceDescriptor($this->getReflectedClass()));
         }
-        
-        return $content;
+
+        return $storage->get($cacheId);
     }
     
     /**
-     * Returns an object oriented interface for the file in which the class has been defined.
+     * Set a reflection object of the class that is introspected.
      *
-     * @link http://php.net/manual/en/class.splfileobject.php
+     * @param ReflectionClass $reflClass a reflection class.
      */
-    public function getFile()
-    {
-        if ($this->file === null) {
-            $this->file = new SplFileObject($this->getFileName());
+    private function setReflectedClass(ReflectionClass $reflClass)
+    {        
+        if ($reflClass === null) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a Reader object as argument; received "null"',
+                __METHOD__
+            ));
         }
-        return $this->file;
+    
+        $this->reflClass = $reflClass;
+    }
+    
+    /**
+     * Returns a reflection object of the class that is introspected.
+     *
+     * @return ReflectionClass a reflection class.
+     */
+    private function getReflectedClass()
+    {
+        return $this->reflClass;
+    }
+    
+    /**
+     * Returns a caching object.
+     *
+     * @return ArrayStorage a storage object.
+     */
+    private function getCache()
+    {
+        if (self::$cache === null) {
+            self::$cache = new ArrayStorage();
+        }
+        return self::$cache;
     }
 }
