@@ -37,22 +37,22 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Scanner;
+namespace Framework\Parser\Tree\Iterator;
+
+use Framework\Parser\Tree\TreeInterface;
 
 /**
- * The ScannerInterface defines the methods required for a scanner to
- * process a sequence of characters, it being from a string, file or stream.
+ * An iterator that is capable of iterating over a Tree object.
  *
- * @author Chris Harris <c.harris@hotmail.com>
+ * @author Chris Harris
  * @version 1.0.0
  */
-interface ScannerInterface
+interface TreeIterator extends \Iterator
 {
-    
     /**
-     * Scans the given string and returns an array of tokens for uri parts found in that string.
+     * Set the tree over which to iterate.
      *
-     * @return array a numeric array consisting of tokens that were found.
+     * @param TreeInterface the tree over which to iterate.
      */
-    public function scan();
+    public function setTree(TreeInterface $tree);
 }

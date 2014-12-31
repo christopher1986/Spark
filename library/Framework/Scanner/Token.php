@@ -84,19 +84,11 @@ class Token implements TokenInterface
      * It's not uncommon for tokens to share the same identity. It's the value stored by a token that makes it's 
      * unique amongst other tokens. The name of a token is simply used to hint what value is stored by the token.
      *
-     * @param string $identity a name that identifies this token.
+     * @param mixed $identity a value that identifies this token.
      * @throws InvalidArgumentException if the given argument is not of type 'string'.
      */
     private function setIdentity($identity)
-    {
-        if (!is_string($identity)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects a string argument; received "%s"',
-                __METHOD__,
-                (is_object($identity) ? get_class($identity) : gettype($identity))
-            ));
-        }
-        
+    {        
         $this->identity = $identity;
     }
     

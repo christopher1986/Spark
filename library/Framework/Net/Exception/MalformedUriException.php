@@ -46,5 +46,5 @@ namespace Framework\Net\Exception;
  * @author Chris Harris <c.harris@hotmail.com>
  * @version 1.0.0
  */
-class MalformedUriException extends \Exception implements \ExceptionInterface
+class MalformedUriException extends \Exception
 {}

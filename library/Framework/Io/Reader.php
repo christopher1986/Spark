@@ -91,6 +91,13 @@ abstract class Reader
     public abstract function reset();
     
     /**
+     * Returns the position of the reader within the stream.
+     *
+     * @return int the position within the stream.
+     */
+    public abstract function getPosition();
+    
+    /**
      * Skip the given number of characters.
      *
      * @param int $amount the number of characters to skip.
@@ -101,7 +108,7 @@ abstract class Reader
      * Peeks ahead by the given number of characters and returns all characters found.
      *
      * @param string $amount the number of characters to peek forward.
-     * @return string the characters found during the peek.
+     * @return string|null the character(s) found during the peek, or null if no characters are left.
      */
     public abstract function peek($amount = 1);
 }

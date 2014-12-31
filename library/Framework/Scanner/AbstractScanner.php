@@ -115,4 +115,14 @@ abstract class AbstractScanner implements ScannerInterface
     {
         $this->context = 0x00;
     }
+    
+    /**
+     * Returns true if the scanner has no context.
+     *
+     * @return bool true if no context is set, false otherwise.
+     */
+    public function isContextFree()
+    {
+        return ($this->context === 0x00);
+    }
 }

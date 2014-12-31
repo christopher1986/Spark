@@ -43,6 +43,7 @@ use Framework\Common\Comparator\ComparableComparator;
 use Framework\Common\Comparator\CompositeComparator;
 use Framework\Common\Comparator\NumericComparator;
 use Framework\Common\Comparator\StringComparator;
+use Framework\Common\Equatable;
 use Framework\Util\Arrays;
 
 class PriorityList implements PriorityListInterface
@@ -107,8 +108,6 @@ class PriorityList implements PriorityListInterface
             $elements = iterator_to_array($elements);
         }
         
-
-        
         // append all elements to the list.
         $this->items = array_merge($this->items, $elements);
         // invalidate sorted.
@@ -132,7 +131,17 @@ class PriorityList implements PriorityListInterface
      */
     public function contains($element)
     {
-        return (in_array($element, $this->items));
+        $contains = false;
+        if ($element instanceof Equatable) {
+            foreach ($this->items as $item) {
+                if ($contains = $element->equals($item)) {
+                    break;
+                }
+            }
+        } else {
+            $contains = in_array($element, $this->items);
+        }
+        return $contains;
     }
     
     /**

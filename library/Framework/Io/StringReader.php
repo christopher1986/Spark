@@ -88,12 +88,11 @@ class StringReader extends Reader
     }
     
     /**
-     * Reads the given amount of the characters from the reader starting 
-     * from the given offset. 
+     * Reads the given amount of the characters from the reader starting from the given offset. 
      *
      * @param int $offset the offset at which to start storing characters.
      * @param int $length the maximum number of characters to read.
-     * @return string a string consisting of the characters read.
+     * @return string|null a string consisting of the characters read, or null if the reader has reached the end of the stream.
      * @throws \InvalidArgumentException if the given arguments are not integer types.
      */
     public function read($offset, $length)
@@ -124,7 +123,7 @@ class StringReader extends Reader
      * Read the given amount of the characters from the reader.
      * 
      * @param int $amount the number of characters to read.
-     * @return string|null a string containing the given amount of characters.
+     * @return string|null a string containing the given amount of characters, or null if the reader has reached the end of the stream.
      */ 
     public function readChar($amount = 1)
     {
@@ -137,11 +136,27 @@ class StringReader extends Reader
     }
     
     /**
+     * Returns the character at the given position, or if null if the given position is not valid or larger than the number of characters 
+     * contained by the reader.
+     *
+     * @param int $position the position of the character that will be returned.
+     * @return string|null the character that is stored at the given position, or null if the position is not valid.
+     */
+    public function readCharAt($position)
+    {
+        $char = null;
+        if (isset($this->content[$position])) {
+            $char = $this->content[$position];
+        }
+
+        return $char;
+    }
+    
+    /**
      * Read characters from the reader until one or more whitespace characters
      * are encountered.
      * 
-     * @return string|null a string containing the content of the word, or null 
-     *                     if the reader has reached the end of the stream.
+     * @return string|null a string containing the content of the word, or null if the reader has reached the end of the stream.
      */    
     public function readWord()
     {        
@@ -179,22 +194,17 @@ class StringReader extends Reader
     }
     
     /**
-     * Read characters from the reader until a line termination character
-     * is encountered.
+     * Read characters from the reader until a line termination character is encountered.
      * 
-     * @return string|null a string containing the content of the a line, or null 
-     *                     if the reader has reached the end of the stream.
+     * @return string|null a string containing the content of the a line, or null if the reader has reached the end of the stream.
      */
     public function readLine()
     {
         $line = null;
-        if ($this->hasCharsLeft()) {        
-            if (preg_match('#(.[^\n]*)#', $this->content, $matches, 0, $this->nextChar)) {
-                // get matched line.
-                $line = $matches[1];
-                // update char count.
-                $this->nextChar += strlen($line);
-            }
+        if ($this->hasCharsLeft()) {      
+            $line = (preg_match('#(.[^\n]*)#s', $this->content, $matches, 0, $this->nextChar) === 1) ? $matches[1] : substr($this->content, $this->nextChar);
+            // update next char.
+            $this->nextChar += (strlen($line) > 0) ? strlen($line) : 1;
         }
         
         return $line;
@@ -207,8 +217,7 @@ class StringReader extends Reader
      */
     public function mark()
     {
-        $this->markedChar = $this->nextChar; 
-        
+        $this->markedChar = $this->nextChar;  
     }
     
     /**
@@ -232,10 +241,7 @@ class StringReader extends Reader
     }
     
     /**
-     * Skip the given number of characters.
-     *
-     * @param int $amount the number of characters to skip.
-     * @see StringReader::read($offset, $length)
+     * {@inheritDoc}
      */
     public function skip($amount = 1)
     {
@@ -284,9 +290,7 @@ class StringReader extends Reader
     }
 
     /**
-     * Returns the position of the reader within the stream.
-     *
-     * @return int the position within the stream.
+     * {@inheritDoc}
      */
     public function getPosition()
     {

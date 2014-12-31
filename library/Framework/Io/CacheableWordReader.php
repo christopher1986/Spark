@@ -37,22 +37,27 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Scanner;
+namespace Framework\Io;
 
 /**
- * The ScannerInterface defines the methods required for a scanner to
- * process a sequence of characters, it being from a string, file or stream.
+ * A reader that is capable of caching a single word from a stream. 
  *
- * @author Chris Harris <c.harris@hotmail.com>
+ * @author Chris Harris
  * @version 1.0.0
  */
-interface ScannerInterface
-{
+interface CacheableWordReader
+{        
+    /**
+     * Returns the currently cached word.
+     *
+     * @return string|null the current word, or null if there are no characters left to cache.
+     */
+    public function getWord();
     
     /**
-     * Scans the given string and returns an array of tokens for uri parts found in that string.
+     * Consumes the current word, in affect moving the reader forward so the next word can be cached.
      *
-     * @return array a numeric array consisting of tokens that were found.
+     * @return bool true if there are still characters left, false otherwise.
      */
-    public function scan();
+    public function consumeWord();
 }

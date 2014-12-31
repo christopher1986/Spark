@@ -37,22 +37,56 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Scanner;
+namespace Framework\Common\Annotation;
 
-/**
- * The ScannerInterface defines the methods required for a scanner to
- * process a sequence of characters, it being from a string, file or stream.
- *
- * @author Chris Harris <c.harris@hotmail.com>
- * @version 1.0.0
- */
-interface ScannerInterface
+interface Annotator
 {
+    /**
+     * indicates that the annotation is allowed in other annotations.
+     *
+     * @var string
+     */
+    const ANNOTATION = 'annotation';
     
     /**
-     * Scans the given string and returns an array of tokens for uri parts found in that string.
+     * indicates that the annotation is allowed in the property docblock.
      *
-     * @return array a numeric array consisting of tokens that were found.
+     * @var string
      */
-    public function scan();
+    const PROPERTY = 'property';
+    
+    /**
+     * indicates that the annotation is allowed in the method docblock.
+     *
+     * @var string
+     */
+    const METHOD = 'method';
+    
+    /**
+     * indicates that the annotation is allowed in the class docblock.
+     *
+     * @var string
+     */
+    const CLASS = 'class';
+    
+    /**
+     * indicates that the annotation is allowed in the class, property and method docblock.
+     *
+     * @var string
+     */
+    const ALL = 'all';
+    
+    /**
+     * Set one or more targets to which the annotation type is applicable.
+     *
+     * @param array|string $target one or more targets that indicate where the annotation type is applicable.
+     */
+    public function setTarget($target);
+    
+    /**
+     * Returns the target(s) on which the annotation type is applicable.
+     *
+     * @return array a collection of target that indicate where annotation type is applicable.
+     */
+    public function allowedTarget();
 }

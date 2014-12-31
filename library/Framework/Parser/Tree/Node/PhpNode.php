@@ -37,22 +37,48 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Scanner;
+namespace Framework\Parser\Tree\Node;
 
 /**
- * The ScannerInterface defines the methods required for a scanner to
- * process a sequence of characters, it being from a string, file or stream.
+ * A node that represents a PHP keyword and is capable of storing the value that's associated with the keyword.
  *
- * @author Chris Harris <c.harris@hotmail.com>
+ * @author Chris Harris
  * @version 1.0.0
  */
-interface ScannerInterface
+class PhpNode extends Node implements NodeValueCapable
 {
-    
     /**
-     * Scans the given string and returns an array of tokens for uri parts found in that string.
-     *
-     * @return array a numeric array consisting of tokens that were found.
+     * @var mixed The value to hold.
      */
-    public function scan();
+    private $value;
+
+    /**
+     * Create a node.
+     *
+     * @param string $name the name of the node.
+     * @param mixed $value a possible value associated with the node.
+     */
+    public function __construct($name, $value = null)
+    {
+        parent::__construct($name);
+        $this->setValue($value);
+    }
+
+    /**
+     * The value this node holds.
+     *
+     * @param mixed $value the value to hold.
+     */
+    public function setValue($value = null)
+    {
+        $this->value = $value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
 }

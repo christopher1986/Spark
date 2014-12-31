@@ -37,22 +37,20 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Scanner;
+namespace Framework\Io;
 
 /**
- * The ScannerInterface defines the methods required for a scanner to
- * process a sequence of characters, it being from a string, file or stream.
+ * Allows any object that implements this interface to become reader aware. 
  *
- * @author Chris Harris <c.harris@hotmail.com>
+ * @author Chris Harris
  * @version 1.0.0
  */
-interface ScannerInterface
+interface ReaderAware
 {
-    
     /**
-     * Scans the given string and returns an array of tokens for uri parts found in that string.
+     * Set a reader from which characters will be read.
      *
-     * @return array a numeric array consisting of tokens that were found.
+     * @param Reader $reader the reader from which characters will be read.
      */
-    public function scan();
+    public function setReader(Reader $reader);
 }

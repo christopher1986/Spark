@@ -58,24 +58,24 @@ interface TokenInterface
     const UNKNOWN = 'unknown';
     
     /**
-     * Describes a token and hints what value might be stored inside the token.
+     * Describes a token and hints what value might be stored inside this token.
      *
      * @return string
      */
     public function identify();
     
     /**
-     * Returns the value stored by the token.
+     * Returns the value stored by this token.
      *
      * Although the value stored by a token can be of any type, it's more likely that a token
      * will store a sequence of characters found through a process known as tokenization. 
      *
-     * @return mixed the value stored by the token.
+     * @return mixed the value stored by this token.
      */
     public function getValue();
     
     /**
-     * The value to store by the token.
+     * The value to store by this token.
      *
      * @param mixed $value the value to store.
      * @see TokenInterface::getValue()
