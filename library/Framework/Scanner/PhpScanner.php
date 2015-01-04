@@ -84,9 +84,9 @@ class PhpScanner extends AbstractScanner
     private $content;
     
     /**
-     * Array consisting of tokens that were found.
+     * a collection of tokens found within a stream of text.
      *
-     * @var array
+     * @var TokenCollection
      */
     private $tokens;
     
@@ -142,7 +142,7 @@ class PhpScanner extends AbstractScanner
     public function scan()
     {    
         if ($this->isScanned) {
-            return $this->tokens;
+            return $this->getTokens();
         }
         
         static $contextNamespace = 0x01;
@@ -176,17 +176,17 @@ class PhpScanner extends AbstractScanner
             /**
              * Collect the content of all tokens to form an include statement.
              */
-            if ($this->hasContext($contextInclude)) {
-                if ($identifier === T_CONSTANT_ENCAPSED_STRING) {
-                    $value .= $content;
-                }
-                
+            if ($this->hasContext($contextInclude)) {                            
                 // a semicolon indicates the end of an include statement.
                 if ($identifier === null && $content === ';') {
                     $this->addToken(new Token(self::T_INCLUDE_STATEMENT, $value));
                     $value = '';
+                    
                     $this->removeContext($contextInclude);
+                    continue;
                 }
+                
+                $value .= $content;
             }
             
             /**
@@ -278,7 +278,7 @@ class PhpScanner extends AbstractScanner
         
         $this->isScanned = true;
         
-        return $this->tokens;
+        return $this->getTokens();
     }
     
     /**
@@ -300,12 +300,25 @@ class PhpScanner extends AbstractScanner
     }
     
     /**
+     * Returns a collection of tokens found by the scanner.
+     *
+     * @return array a collection of tokens.
+     */
+    private function getTokens()
+    {
+        if ($this->tokens === null) {
+            $this->tokens = new TokenCollection();
+        }
+        return $this->tokens;
+    }
+    
+    /**
      * Store a newly created token.
      *
      * @param TokenInterface $token the token to store.
      */
     private function addToken(TokenInterface $token)
     {
-        $this->tokens[] = $token;
+        $this->getTokens()->add($token);
     }
 }

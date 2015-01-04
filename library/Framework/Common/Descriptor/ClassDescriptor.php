@@ -42,6 +42,7 @@ namespace Framework\Common\Descriptor;
 use ReflectionClass;
 
 use Framework\Cache\ArrayStorage;
+use Framework\Common\Annotation\AnnotationLoader;
 use Framework\Common\Annotation\AnnotationScanner;
 
 /**
@@ -53,18 +54,23 @@ use Framework\Common\Annotation\AnnotationScanner;
 class ClassDescriptor
 {
     /**
-     * A cache to hold namespace descriptors.
-     *
-     * @var ArrayStorage
+     *  The class to describe.
+     * 
+     * @var ReflectionClass
      */
-    private static $cache;
+    private $reflectedClass;
+
+    /**
+     * 
+     */
+    private $annotations;
 
     /**
      * A collection of annotations for this class.
      *
      * @var array
      */
-    private $annotations = array();
+    private $annotationLoader;
     
     /**
      * Create a ClassDescriptor.
@@ -73,67 +79,96 @@ class ClassDescriptor
      */
     public function __construct($class)
     {    
-        $reflClass = ($class instanceof ReflectionClass) ? $class : new ReflectionClass($class);
-        $this->setReflectedClass($reflClass);
+        $this->setClass($class);
+        
+        $fileDescriptor = new FileDescriptor($this->getFileName());
+        echo '<pre>';
+        var_dump($fileDescriptor->getUses($this->getNamespaceName()));
+        echo '</pre>';
+    }
+    
+    public function getAnnotationLoader()
+    {
+        if ($this->annotationLoader === null) {
+            $this->annotationLoader = new AnnotationLoader($this->getClass());
+        }
+        
+        return $this->annotationLoader;
     }
     
     public function getAnnotations()
     {
-        $namespace = $this->getNamespace();
-        
-        echo '<pre>';
-        var_dump($namespace->getUseStatements());
-        echo '</pre>';
         
         if ($this->annotations === null) {
-            $scanner = new AnnotationScanner($this->getDocComment());
-            $this->annotations = $scanner->scan();
+            $scanner = new AnnotationScanner($this->getClass()->getDocComment());
+            $tokens = $scanner->scan();
         }
+        
         return $this->annotations;
     }
     
     /**
-     * Returns a namespace descriptor for this class.
+     * Returns the name of the namespace.
      *
-     * @return NamespaceDescriptor an object that describes the namespace of this class.
+     * @return string the name of the namespace. 
      */
-    public function getNamespace()
+    public function getNamespaceName()
     {
-        $cacheId = md5($this->getReflectedClass()->getFileName() . $this->getReflectedClass()->getName());
-        
-        $storage = $this->getCache(); 
-        if (!$storage->has($cacheId)) {
-            $storage->add($cacheId, new NamespaceDescriptor($this->getReflectedClass()));
+        return $this->getClass()->getNamespaceName();
+    }
+    
+    /**
+     * Return the filename of the file in which the class has been defined.
+     *
+     * @return string|null the filename of the file, or if the class is defined in the PHP core
+     *                     or in a PHP extension, null is returned.
+     */
+    public function getFileName()
+    {
+        $filename = $this->getClass()->getFileName();
+        return ($filename === false) ? null : $filename;
+    }
+    
+    /**
+     * Returns the short name of the class.
+     *
+     * @return string the shortname of the class.
+     */
+    public function getShortName()
+    {
+        return $this->getClass()->getShortName();
+    }
+    
+    /**
+     * Set class to describe.
+     *
+     * @param mixed a class to reflect or a ReflectionClass.
+     */
+    private function setClass($class)
+    {        
+        if (is_string($class) || (is_object($class) && !($class instanceof \Reflector))) {
+            $class = new ReflectionClass($class);
         }
 
-        return $storage->get($cacheId);
-    }
-    
-    /**
-     * Set a reflection object of the class that is introspected.
-     *
-     * @param ReflectionClass $reflClass a reflection class.
-     */
-    private function setReflectedClass(ReflectionClass $reflClass)
-    {        
-        if ($reflClass === null) {
+        if (!($class instanceof ReflectionClass)) {
             throw new \InvalidArgumentException(sprintf(
-                '%s: expects a Reader object as argument; received "null"',
-                __METHOD__
+                '%s: expects a class name or ReflectionClass as argument; received "%s"',
+                __METHOD__,
+                (is_object($class) ? get_class($class) : gettype($class))
             ));
         }
-    
-        $this->reflClass = $reflClass;
+        
+        $this->reflectedClass = $class;
     }
     
     /**
-     * Returns a reflection object of the class that is introspected.
+     * Returns the class to introspect.
      *
-     * @return ReflectionClass a reflection class.
+     * @return ReflectionClass a reflected class.
      */
-    private function getReflectedClass()
+    private function getClass()
     {
-        return $this->reflClass;
+        return $this->reflectedClass;
     }
     
     /**
@@ -147,5 +182,22 @@ class ClassDescriptor
             self::$cache = new ArrayStorage();
         }
         return self::$cache;
+    }
+    
+    /**
+     * Returns a hash id for this class.
+     *
+     * @return string a
+     */
+    private function getClassUID()
+    {
+        $reflClass = $this->getClass();
+        
+        $filename = $reflClass->getFileName();
+        if (false === $filename) {
+            $filename = '';
+        }
+        
+        return md5(sprintf('%s::%s', $filename, $reflClass->getShortName()));
     }
 }

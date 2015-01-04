@@ -78,7 +78,7 @@ class PhpParser
         foreach ($tokens as $token) {
             switch ($token->identify()) {
                 case PhpScanner::T_NAMESPACE:
-                    var_dump($token->getValue());
+                    
                     break;
                 case PhpScanner::T_USE_STATEMENT:
 

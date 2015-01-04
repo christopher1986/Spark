@@ -43,7 +43,9 @@ use ReflectionClass;
 use SplFileObject;
 
 use Framework\Io\Exception\AccessDeniedException;
+use Framework\Io\Exception\FileNotFoundException;
 use Framework\Scanner\PhpScanner;
+use Framework\Util\Arrays;
 
 /**
  * 
@@ -51,45 +53,24 @@ use Framework\Scanner\PhpScanner;
  * @author Chris Harris 
  * @version 1.0.0
  */
-class NamespaceDescriptor
-{
+class FileDescriptor
+{    
     /**
-     *  A class whose namespace to describe.
-     * 
-     * @var ReflectionClass
-     */
-    private $reflClass;
-
-    /**
-     * The name of the namespace.
+     * A default namespace to use if one is not provided.
      *
      * @var string
      */
-    private $namespace;
+    const DEFAULT_NAMESPACE = 'global';
 
     /**
-     * A collection of use statements.
+     * A multidimensional array containing namespaces.
      *
      * @var array
      */
-    private $uses = array();
-    
-    /**
-     * A collection of files to include.
-     *
-     * @var array
-     */
-    private $includes = array();
+    private $namespaces = array();
 
     /**
-     * A collection of classes contained within the namespace.
-     *
-     * @var array
-     */
-    private $classNames = array();
-
-    /**
-     * Object to read the contents of the file containing the namespace.
+     * An object from which to read the contents of a file.
      *
      * @var SplFileObject
      */
@@ -103,99 +84,61 @@ class NamespaceDescriptor
     private $hasIntrospected = false;
 
     /**
-     * Create a NamespaceDescriptor.
+     * Create a FileDescriptor.
      *
-     * @param string|ReflectionClass $class the class whose namespace to describe.
+     * @param string $filename absolute path to a file to describe.
      */
-    public function __construct($class)
+    public function __construct($filename)
     {    
-        $reflClass = ($class instanceof ReflectionClass) ? $class : new ReflectionClass($class);
-        $this->setReflectedClass($reflClass);
+        $this->createFileObject($filename);
         $this->introspect();
     }
     
     /**
-     * Returns the name of the namespace.
+     * Returns a collection of class names for the given namespace.
      *
-     * @return string the name of the namespace. 
+     *
+     * @return array a numeric array of class names.
      */
-    public function getNamespace()
+    public function getClasses($namespace = self::DEFAULT_NAMESPACE)
     {
-        if ($this->namespace === null) {
-            $this->namespace = $this->getReflectedClass()->getNamespaceName();
+        $namespaceKey = Arrays::normalizeKey($namespace);
+        
+        $classes = array();
+        if (isset($this->namespaces[$namespaceKey]['classes'])) {
+            $classes = $this->namespaces[$namespaceKey]['classes'];
         }
-        return $this->namespace;
+        return $classes;
     }
     
     /**
-     * Returns a collection of use statements.
+     * Returns a collection of use statements for the given namespace.
      *
      * A single use statement is defined as an associative array containing the use statement and
      * a possible alias. An example given is below:
      *  
      * array(
      *     array(
-     *         'use' => 'MyNamespace\Foo',
-     *         'as'  => NULL
+     *         'use'       => 'SomeNamespace\Foo',
+     *         'as'        => NULL
      *     ),
      *     array(
-     *         'use' => 'MyNamespace\Baz',
-     *         'as'  => 'FooBar'
+     *         'use'       => 'SomeNamespace\Baz',
+     *         'as'        => 'FooBar'
      *     ),
      * )
      *
      * @return array a multidimensional array of use statements.
      */
-    public function getUseStatements()
+    public function getUses($namespace = self::DEFAULT_NAMESPACE)
     {
-        return $this->uses;
-    }
+        $namespaceKey = Arrays::normalizeKey($namespace);
     
-    /**
-     * Returns a collection of include statements.
-     *
-     * @return array a numeric array of include statements.
-     */
-    public function getIncludeStatements()
-    {
-        return $this->includes;
-    }
-    
-    /**
-     * Returns a collection of class names.
-     *
-     * @return array a numeric array of class names.
-     */
-    public function getClassNames()
-    {
-        return $this->classNames;
-    }
-    
-    /**
-     * Set a reflection object of the class whose namespace is introspected.
-     *
-     * @param ReflectionClass $reflClass a reflection class.
-     */
-    private function setReflectedClass(ReflectionClass $reflClass)
-    {        
-        if ($reflClass === null) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects a ReflectionClass as argument; received "null"',
-                __METHOD__
-            ));
+        $uses = array();
+        if (isset($this->namespaces[$namespaceKey]['uses'])) {
+            $uses = $this->namespaces[$namespaceKey]['uses'];
         }
-    
-        $this->reflClass = $reflClass;
-    }
-    
-    /**
-     * Returns a reclection object of the class whose namespace is introspected.
-     *
-     * @return ReflectionClass a reflection class.
-     */
-    private function getReflectedClass()
-    {
-        return $this->reflClass;
+        return $uses;
     }
 
     /**
@@ -209,41 +152,68 @@ class NamespaceDescriptor
             return;
         }
         
+        $namespaceKey = Arrays::normalizeKey(self::DEFAULT_NAMESPACE);
+        
         $scanner = new PhpScanner($this->getFileContent());
         $tokens = $scanner->scan();
         
-        $withinNamespace = ($this->getReflectedClass()->inNamespace()) ? false : true;
-        foreach ($tokens as $token) {
-            if ($token->identify() == PhpScanner::T_NAMESPACE) {
-                $withinNamespace = ($token->getValue() === $this->getNamespace());
-            }
-        
-            if (!$withinNamespace) {
-                continue;
-            }
-            
+        foreach ($tokens as $token) {            
             switch ($token->identify()) {
+                case PhpScanner::T_NAMESPACE:
+                    // update key for new namespace.
+                    $namespaceKey = Arrays::normalizeKey($token->getValue());
+                    break;
                 case PhpScanner::T_USE_STATEMENT:
-                    $this->uses[] = array('use' => $token->getValue(), 'as' => null);
+                    $this->namespaces[$namespaceKey]['uses'][] = array('use' => $token->getValue(), 'as' => null);
                     break;
                 case PhpScanner::T_AS_STATEMENT:
-                    // move to last use statement.
-                    end($this->uses);
-                    // get key for this statement.
-                    $key = key($this->uses);
-                    // store alias for last statement.
-                    $this->uses[$key]['as'] = $token->getValue();
-                case PhpScanner::T_INCLUDE_STATEMENT:
-                    $this->includes[] = $token->getValue();
+                    // move to last element.
+                    end($this->namespaces[$namespaceKey]['uses']);
+                    // get index of last element.
+                    $index = key($this->namespaces[$namespaceKey]['uses']);
+                    // add alias to use statement.
+                    $this->namespaces[$namespaceKey]['uses'][$index]['as'] = $token->getValue();
                     break;
                 case PhpScanner::T_CLASS_NAME:
-                    $this->classNames[] = $token->getValue();
+                    $this->namespaces[$namespaceKey]['classes'][] = $token->getValue();
                     break;
-                
             }
         }
         
         $this->hasIntrospected = true;
+    }
+    
+    /**
+     * Creates an object oriented interface for the given file.
+     *
+     * @param string $filename the file that will be parsed.
+     * @throws InvalidArgumentException if the given argument is not of type string.
+     * @throws FileNotFoundException if given path point to a non-existing file.
+     */
+    private function createFileObject($filename)
+    {
+        if (!is_string($filename)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($filename) ? get_class($filename) : gettype($filename))
+            ));
+        } else if (!file_exists($filename)) {
+            throw new FileNotFoundException($filename, 'file does not exist, or symbolic link is pointing to non-existing file.');
+        }
+        
+        $this->fileObject = new SplFileObject($filename);
+    }
+    
+    /**
+     * Returns an object oriented interface for the file to describe.
+     *
+     * @return SplFileObject an object oriented interface for the file.
+     * @link http://php.net/manual/en/class.splfileobject.php
+     */
+    private function getFileObject()
+    {
+        return $this->fileObject;
     }
     
     /**
@@ -274,19 +244,5 @@ class NamespaceDescriptor
         }
         
         return $content;
-    }
-    
-    /**
-     * Returns an object oriented interface for the file in which the class has been defined.
-     *
-     * @return SplFileObject an object oriented interface for a file.
-     * @link http://php.net/manual/en/class.splfileobject.php
-     */
-    private function getFileObject()
-    {
-        if ($this->fileObject === null) {
-            $this->fileObject = new SplFileObject($this->getReflectedClass()->getFileName());
-        }
-        return $this->fileObject;
     }
 }

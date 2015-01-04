@@ -50,9 +50,9 @@ interface ScannerInterface
 {
     
     /**
-     * Scans the given string and returns an array of tokens for uri parts found in that string.
+     * Scans a stream of text and returns a collection of tokens that were found.
      *
-     * @return array a numeric array consisting of tokens that were found.
+     * @return array a collectioon of tokens that were found.
      */
     public function scan();
 }

@@ -264,7 +264,7 @@ class StringReader extends Reader
         $chars = '';
     
         $this->mark();
-        $chars = $this->read(0, (int) $amount);
+        $chars = $this->read(1, (int) $amount);
         $this->reset();
         
         return $chars;
