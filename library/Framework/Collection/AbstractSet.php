@@ -40,13 +40,13 @@
 namespace Framework\Collection;
 
 /**
- * This class provides a partial implementation of the {@see SetInterface}
- * to minimize the effort required to implement this interface.
+ * This class provides a partial implementation of the {@see SetInterface} to minimize the effort 
+ * required to implement this interface.
  *
  * @author Chris Harris
  * @version 1.0.0
  */
-abstract class AbstractSet implements SetInterface
+abstract class AbstractSet implements CollectionInterface
 {
     /**
      * {@inheritDoc}
@@ -128,6 +128,33 @@ abstract class AbstractSet implements SetInterface
             $tmp = $this->toArray();
             foreach ($tmp as $element) {
                 if (in_array($element, $elements) && $this->remove($element)) {
+                    $modified = true;
+                }
+            }
+        }
+        
+        return $modified;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */ 
+    public function retainAll($elements)
+    {
+        if (!is_array($elements) && !$elements instanceof \Traversable) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects an array or Traversable as argument; received "%s"',
+                __METHOD__,
+                (is_object($elements) ? get_class($elements) : gettype($elements))
+            ));
+        }
+        
+        $modified = false;
+        // use a (copy) array to prevent non-deterministic behavior.
+        $tmp = $this->toArray();
+        foreach ($tmp as $index => $element) {
+            if (!in_array($element, $elements)) {
+                if (null !== $this->removeByIndex($index)) {
                     $modified = true;
                 }
             }
