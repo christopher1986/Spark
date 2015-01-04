@@ -189,6 +189,18 @@ class Arrays
     }
     
     /**
+     * Returns a normalized key.
+     *
+     * @param string $key the key to normalize.
+     * @return string a normalized key.
+     */
+    public static function normalizeKey($key)
+    {
+        $key = str_replace(array(' ', '-', '\\'), '_', strtolower($key));
+        return preg_replace('/[^A-Za-z0-9_]/', '', $key);
+    }
+    
+    /**
      * Sorts the specified array according to a comparator.
      *
      * @param array $arr the array to be sorted.
