@@ -1,46 +1,49 @@
 <?php
 
-namespace Main\Debug 
+namespace Main\Debug; 
+
+include_once(__DIR__ . '/Test.php');
+
+use SplFileObject;
+use Framework\Common\Annotation\AnnotationScanner as AlsoSomethingElse,
+    Framework\Scanner\PhpScanner as SomethingElse;
+use Framework\Io\StringReader;
+
+/**
+ * A class used for testing purposes of custom reflection methods.
+ * A second line
+ * 
+ * @author Chris Harris
+ * @Framework\Annotation\Test(name = 'chris\"s dog ran away', age = 28)
+ * @Framework\Annotation\Test(name = 'chris\"s dog ran away', age = 28)
+ */
+class Foo
 {
-    use SplFileObject;
-    use Framework\Common\Annotation\AnnotationScanner as AlsoSomethingElse,
-        Framework\Scanner\PhpScanner as SomethingElse;
-    use Framework\Io\StringReader;
+    /**
+     * The name.
+     *
+     * @var string
+     */
+    private $name;
 
     /**
-     * A class used for testing purposes of custom reflection methods.
-     * A second line
-     * 
-     * @author Chris Harris
-     * @Framework\Annotation\Test(name = 'chris', age = 28)
+     * Set the name.
+     *
+     * @param string $name the name.
      */
-    class Foo
+    public function setName($name)
     {
-        /**
-         * The name.
-         *
-         * @var string
-         */
-        private $name;
-
-        /**
-         * Set the name.
-         *
-         * @param string $name the name.
-         */
-        public function setName($name)
-        {
-            $this->name = name;
-        } 
-        
-        /**
-         * Returns the name.
-         *
-         * @return string the name.
-         */
-        public function getName()
-        {
-            return $this->name;
-        }
+        $this->name = $name;
+    } 
+    
+    /**
+     * Returns the name.
+     *
+     * @return string the name.
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 }
+

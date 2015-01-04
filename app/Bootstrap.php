@@ -36,10 +36,11 @@ class Bootstrap extends Application
     }
  
     protected function _initReflection()
-    {
+    {    
         $fooObject = new Foo();
         
         $classDescriptor = new ClassDescriptor($fooObject);
+        
         $annotations = $classDescriptor->getAnnotations();
     }
  
