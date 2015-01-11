@@ -142,4 +142,20 @@ class Strings
         }
         return $arr;
     }
+    
+    /**
+     * Returns a string with it's first character is in lowercase.
+     *
+     * @param string $str the string whose first character to make lowercase.
+     * @return string a string whose first character is in lowercase.
+     */
+    public static function lcfirst($str)
+    {
+        if (function_exists('lcfirst') !== false) {
+            return lcfirst($str);
+        }
+        
+        $str[0] = strtolower($str[0]);
+        return $str;
+    }
 }

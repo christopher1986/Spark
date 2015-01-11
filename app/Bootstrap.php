@@ -40,8 +40,10 @@ class Bootstrap extends Application
         $fooObject = new Foo();
         
         $classDescriptor = new ClassDescriptor($fooObject);
+        $loader = $classDescriptor->getAnnotationLoader();
+        $loader->getAnnotation('Test');
         
-        $annotations = $classDescriptor->getAnnotations();
+        //$annotations = $classDescriptor->getAnnotations();
     }
  
     protected function _initUri()

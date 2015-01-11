@@ -42,9 +42,8 @@ namespace Framework\Collection;
 use Framework\Common\Equatable;
 
 /**
- * This class implements the {@see SetInterface}, and is backed by a native array.
- * the order at which elements are added remains unchanged during the lifetime of 
- * this set.
+ * This class implements the {@see CollectionInterface}, and is backed by a native array. The order at which elements are added remains unchanged 
+ * during the lifetime of this set.
  *
  * @author Chris Harris
  * @version 1.0.0

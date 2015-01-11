@@ -107,8 +107,7 @@ class Arrays
      *
      * @param array|Traversable $iterator the iterator to convert.
      * @param bool $recursive apply conversion recursively.
-     * @return array returns a new array with the keys/value pairs
-     *               of the iterator.
+     * @return array returns a new array with the keys/value pairs of the iterator.
      * @link https://github.com/zendframework/zf2/blob/master/library/Zend/Stdlib/ArrayUtils.php#L204
      */
     public static function iteratorToArray($iterator, $recursive = true) 

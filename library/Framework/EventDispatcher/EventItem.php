@@ -130,7 +130,7 @@ class EventItem implements Comparable
      */
     public function compareTo($obj)
     {
-        if ($obj instanceof EventItem) {
+        if ($obj instanceof self) {
             if ($obj->getPriority() == $this->getPriority()) {
                 return 0;
             }
