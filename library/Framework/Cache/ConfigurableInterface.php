@@ -53,7 +53,7 @@ interface ConfigurableInterface
      * Configure the storage.
      *
      * @param array|Traversable|ConfigurationInterface $config configurations for the storage.
-     * @throws InvalidArgumentException if the given argument is not a collection type or Configuration object.
+     * @throws InvalidArgumentException if the given argument is not a collection type or object that implements the ConfigurationInterface.
      */
     public function setConfiguration($config);
 }

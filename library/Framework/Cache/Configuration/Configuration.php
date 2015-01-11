@@ -76,16 +76,16 @@ class Configuration implements ConfigurationInterface
     private $timeToLive = 0;
     
     /**
-     * The namespace.
+     * A string to prepend to a key.
      *
      * @var string
      */
-    private $namespace = '';    
+    private $prefix = '';    
 
     /**
      * Create configuration.
      *
-     * @param array|
+     * @param array|null $options a collection consisting of configuration options.
      */
     public function __construct($options = null)
     {
@@ -214,28 +214,28 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritDoc}
      */
-    public function getNamespace()
+    public function getPrefix()
     {
-        return $this->namespace;
+        return $this->prefix;
     }
     
     /**
-     * Set the namespace that some storages will prepend to the key of an item.
+     * Set a string that will be prepended to the key of an item.
      *
-     * @param string $namespace a namespace to prepent to a key.
+     * @param string $prefix a string to prepend to a key.
      * @throws InvalidArgumentException if the given argument if not of type string.
      */
-    public function setNamespace($namespace)
+    public function setPrefix($prefix)
     {
-	    if (!is_string($namespace)) {
+	    if (!is_string($prefix)) {
             throw new \InvalidArgumentException(sprintf(
                 '%s: expects a string argument; received "%s"',
                 __METHOD__,
-                (is_object($namespace) ? get_class($namespace) : gettype($namespace))
+                (is_object($prefix) ? get_class($prefix) : gettype($prefix))
             ));
 	    }
 	    
-	    $this->namespace = $namespace;
+	    $this->prefix = $prefix;
     }
     
     /**

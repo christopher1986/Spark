@@ -83,11 +83,11 @@ interface ConfigurationInterface
     public function getTimeToLive();
     
     /**
-     * Returns a namespace that some storages will prepend to the key of an item.
+     * Returns a string that will be prepended to the key of an item.
      *
-     * @return string a namespace to prepent to a key.
+     * @return string a string that will be prepended to a key.
      */
-    public function getNamespace();
+    public function getPrefix();
     
     /**
      * Return an array containing all the properties of this configuration.

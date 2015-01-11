@@ -37,7 +37,7 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Cache;
+namespace Framework\Cache\Storage;
 
 /**
  * An interface that allows items to be stored within a cache. By default a storage provides methods for creating, reading, 
@@ -112,7 +112,7 @@ interface StorageInterface
      * @param string $key the key of the item to increment.
      * @param int $offset the amount by which to increment the item's value.
      * @param int $initial the value to set the item to if it doesn't currently exist.
-     * @return mixed new item on succes, null on failure.
+     * @return mixed new item's value on succes, null on failure.
      */
     public function increment($key, $offset = 1, $initial = 0);
     
@@ -125,7 +125,7 @@ interface StorageInterface
      * @param string $key the key of the item to decrement.
      * @param int $offset the amount by which to decrement the item's value.
      * @param int $initial the value to set the item to if it doesn't currently exist.
-     * @return mixed new item on succes, null on failure.
+     * @return mixed new item's value on succes, null on failure.
      */
     public function decrement($key, $offset = 1, $initial = 0);
     
@@ -151,7 +151,7 @@ interface StorageInterface
      * Invalidates all items currently stored in the storage, after this method returns all items within
      * the storage will be removed.
      * 
-     * @return void.
+     * @return bool true on success, false on failure.
      */
     public function flush();
 }

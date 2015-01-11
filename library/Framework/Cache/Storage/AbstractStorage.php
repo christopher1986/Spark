@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Cache;
+namespace Framework\Cache\Storage;
 
 /**
  * A abstract storage from which other storages can be derived.
@@ -141,10 +141,29 @@ abstract class AbstractStorage implements StorageInterface
     {
         // no permission to write to cache.
         if (!$this->getConfiguration()->isWritable()) {
-            return;
+            return false;
         }
         
-        $this->doFlush();
+        return $this->doFlush();
+    }
+    
+    /**
+     * Returns an key that is normalized and if present will have a prefix prepended to it. 
+     *
+     * @param string the key from which an internal key is derived.
+     * @return string an internal key.
+     * @see AbstractStorage::normalizeKey($key)
+     */
+    protected function getInternalKey($key)
+    {
+        $normalizedKey = $this->normalizeKey($key);
+        
+        $prefix = $this->getConfiguration()->getPrefix();
+        if (strlen($prefix) > 0) {
+            $normalizedKey =  $prefix . $normalizedKey;
+        }
+        
+        return $normalizedKey;
     }
     
     /**

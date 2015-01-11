@@ -1,9 +1,11 @@
 <?php
 
-namespace Framework\Cache;
+namespace Framework\Cache\Storage;
 
+use Framework\Cache\ConfigurableInterface;
 use Framework\Cache\Configuration\ConfigurationInterface;
 use Framework\Cache\Configuration\Configuration;
+use Framework\Util\Strings;
 
 /**
  * A storage that is capable of storing items in an array. Unlike other storages the items contained by the ArrayStorage do not have a
@@ -48,8 +50,8 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
     {
         $value = null;
         if ($this->has($key)) {
-            $normalizedKey = $this->normalizeKey($key);
-            $value = $this->items[$normalizedKey];
+            $internalKey = $this->getInternalKey($key);
+            $value = $this->items[$internalKey];
         }
         
         return $value;
@@ -60,8 +62,8 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
      */
     protected function doHas($key)
     {
-        $normalizedKey = $this->normalizeKey($key);
-        return (isset($this->items[$normalizedKey]));
+        $internalKey = $this->getInternalKey($key);
+        return (isset($this->items[$internalKey]));
     }
     
     /**
@@ -71,8 +73,8 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
     {
         $added = false;
         if ($added = !$this->has($key)) {
-            $normalizedKey = $this->normalizeKey($key);
-            $this->items[$normalizedKey] = $value;
+            $internalKey = $this->getInternalKey($key);
+            $this->items[$internalKey] = $value;
         }
         
         return $added;
@@ -83,8 +85,8 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
      */
     protected function doSet($key, $value)
     {
-        $normalizedKey = $this->normalizeKey($key);
-        $this->items[$normalizedKey] = $value;
+        $internalKey = $this->getInternalKey($key);
+        $this->items[$internalKey] = $value;
         
         return true;
     }
@@ -147,11 +149,11 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
      */
     protected function doDelete($key)
     {
-        $normalizedKey = $this->normalizeKey($key);
+        $internalKey = $this->getInternalKey($key);
     
         $deleted = false;
-        if ($deleted = $this->has($normalizedKey)) {
-            unset($this->items[$normalizedKey]);
+        if ($deleted = $this->has($internalKey)) {
+            unset($this->items[$internalKey]);
         }
         
         return $deleted;
@@ -163,6 +165,7 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
     protected function doFlush()
     {
         $this->items = array();
+        return true;
     }
     
     
@@ -175,7 +178,7 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
     {
         return true;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -183,7 +186,9 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
     {
         if (is_array($config) || $config instanceof \Traversable) {
             $config = new Configuration($config);
-        } else if (!($config instanceof ConfigurationInterface)) {
+        }
+        
+        if (!($config instanceof ConfigurationInterface)) {
             throw new \InvalidArgumentException(sprintf(
                 '%s: expects an object that implements "ConfigurationInterface"; received "%s"',
                 __METHOD__,
@@ -197,7 +202,7 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
     /**
      * Returns the configuration used by this storage.
      *
-     * @return ConfigurationInterface a configuration object.
+     * @return Configuration a configuration object.
      */
     public function getConfiguration()
     {
@@ -206,5 +211,24 @@ class ArrayStorage extends AbstractStorage implements ConfigurableInterface
         }
         
         return $this->config;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected function normalizeKey($key)
+    {
+        // normalize first uppercase character.
+        $letters = function($letters) {
+            return sprintf('-%s', strtolower(trim($letters[1])));
+        };
+        
+        $normalizedKey = parent::normalizeKey($key);
+        $prefix = $this->getConfiguration()->getPrefix();
+        if (strlen($prefix) > 0) {
+            $normalizedKey = sprintf('%s-%s', $prefix, $normalizedKey);
+        }
+        
+        return preg_replace_callback('#([A-Z\s]+)#', $letters, Strings::lcfirst($key));
     }
 }

@@ -55,6 +55,7 @@ interface CheckAndSetCapableInterface
      * @param float $casToken unique value associated with an existing item.
      * @param string $key the key under which to store the item.
      * @param mixed $value The value to store.
+     * @return bool true on success, false on failure.
      */
     public function cas($casToken, $key, $value);
 }
