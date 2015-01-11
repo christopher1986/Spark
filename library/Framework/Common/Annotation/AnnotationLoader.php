@@ -51,11 +51,11 @@ class AnnotationLoader
     /**
      * Set class for which to load annotations.
      *
-     * @param mixed a class to describe or a ClassDescriptor.
+     * @param string|object the name of a class, or an object.
      */
     private function setClass($class)
     {        
-        if (is_string($class) || (is_object($class) && !($class instanceof ClassDescriptor))) {
+        if (!($class instanceof ClassDescriptor)) {
             $class = new ClassDescriptor($class);
         }
 

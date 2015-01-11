@@ -77,13 +77,6 @@ interface Annotator
     const ALL = 'all';
     
     /**
-     * Set one or more targets to which the annotation type is applicable.
-     *
-     * @param array|string $target one or more targets that indicate where the annotation type is applicable.
-     */
-    public function setTarget($target);
-    
-    /**
      * Returns the target(s) on which the annotation type is applicable.
      *
      * @return array a collection of target that indicate where annotation type is applicable.

@@ -51,15 +51,8 @@ use Framework\Common\Annotation\AnnotationScanner;
  * @author Chris Harris 
  * @version 1.0.0
  */
-class ClassDescriptor
+class ClassDescriptor extends ReflectionClass
 {
-    /**
-     *  The class to describe.
-     * 
-     * @var ReflectionClass
-     */
-    private $reflectedClass;
-
     /**
      * 
      */
@@ -72,27 +65,10 @@ class ClassDescriptor
      */
     private $annotationLoader;
     
-    /**
-     * Create a ClassDescriptor.
-     *
-     * @param string|ReflectionClass $class the class to describe.
-     */
-    public function __construct($class)
-    {    
-        $this->setClass($class);
-        
-        /*
-        $fileDescriptor = new FileDescriptor($this->getFileName());
-        echo '<pre>';
-        var_dump($fileDescriptor->getUses($this->getNamespaceName()));
-        echo '</pre>';
-        */
-    }
-    
     public function getAnnotationLoader()
     {
         if ($this->annotationLoader === null) {
-            $this->annotationLoader = new AnnotationLoader($this->getClass());
+            $this->annotationLoader = new AnnotationLoader($this);
         }
         
         return $this->annotationLoader;
@@ -100,106 +76,11 @@ class ClassDescriptor
     
     public function getAnnotations()
     {
-        
         if ($this->annotations === null) {
-            $scanner = new AnnotationScanner($this->getClass()->getDocComment());
+            $scanner = new AnnotationScanner($this->getDocComment());
             $tokens = $scanner->scan();
         }
         
         return $this->annotations;
-    }
-    
-    /**
-     * Returns the name of the namespace.
-     *
-     * @return string the name of the namespace. 
-     */
-    public function getNamespaceName()
-    {
-        return $this->getClass()->getNamespaceName();
-    }
-    
-    /**
-     * Return the filename of the file in which the class has been defined.
-     *
-     * @return string|null the filename of the file, or if the class is defined in the PHP core
-     *                     or in a PHP extension, null is returned.
-     */
-    public function getFileName()
-    {
-        $filename = $this->getClass()->getFileName();
-        return ($filename === false) ? null : $filename;
-    }
-    
-    /**
-     * Returns the short name of the class.
-     *
-     * @return string the shortname of the class.
-     */
-    public function getShortName()
-    {
-        return $this->getClass()->getShortName();
-    }
-    
-    /**
-     * Set class to describe.
-     *
-     * @param mixed a class to reflect or a ReflectionClass.
-     */
-    private function setClass($class)
-    {        
-        if (is_string($class) || (is_object($class) && !($class instanceof \Reflector))) {
-            $class = new ReflectionClass($class);
-        }
-
-        if (!($class instanceof ReflectionClass)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects a class name or ReflectionClass as argument; received "%s"',
-                __METHOD__,
-                (is_object($class) ? get_class($class) : gettype($class))
-            ));
-        }
-        
-        $this->reflectedClass = $class;
-    }
-    
-    /**
-     * Returns the class to introspect.
-     *
-     * @return ReflectionClass a reflected class.
-     */
-    private function getClass()
-    {
-        return $this->reflectedClass;
-    }
-    
-    /**
-     * Returns a caching object.
-     *
-     * @return ArrayStorage a storage object.
-     */
-    private function getCache()
-    {
-        if (self::$cache === null) {
-            self::$cache = new ArrayStorage();
-        }
-        return self::$cache;
-    }
-    
-    /**
-     * Returns a hash id for this class.
-     *
-     * @return string a
-     */
-    private function getClassUID()
-    {
-        $reflClass = $this->getClass();
-        
-        $filename = $reflClass->getFileName();
-        if (false === $filename) {
-            $filename = '';
-        }
-        
-        return md5(sprintf('%s::%s', $filename, $reflClass->getShortName()));
     }
 }

@@ -69,14 +69,7 @@ class AnnotationScanner extends AbstractScanner
      * 
      * var int 
      */
-    const T_PARAM_NAME = 200;
-    
-    /**
-     * Symbolic name for a parameter value.
-     * 
-     * var int 
-     */
-    const T_PARAM_VALUE = 201;
+    const T_PARAMS = 200;
 
     /**
      * A reader capable of reading characters from a stream.
@@ -112,91 +105,35 @@ class AnnotationScanner extends AbstractScanner
         
         static $contextDocBlock = 0x01;
         static $contextClass    = 0x02;
-        static $contextParam    = 0x04;
-        static $contextString   = 0x08;
+        static $contextParams   = 0x04;
         
         // count number of parentheses found.
         $parenthesesCount = 0;
-        // a string literal character.
-        $stringLiteral = '';
         // store characters found by reader.
         $readChars = '';
         
-        do {
-            /**
-             * End of docblock found.
-             */
-            if ($reader->getWord() === '*/') {
-                // remove all contexts.
-                $this->resetContext();
-                // consume word.
-                $isConsuming = $reader->consumeWord();
-                // skip current iteration.
-                continue;
-            }
-            
-            /**
-             * Collect characters of the string literal.
-             */
-            if ($this->hasContext($contextParam | $contextString)) {             
-                if ($reader->getChar() === '\\' && ($nextChar = $reader->peek()) === $stringLiteral) {
-                    // skip characters.
-                    $reader->skip(2);
-                    // store escaped character.
-                    $readChars .= $nextChar;
-                }
-                
-                if ($reader->getChar() === $stringLiteral) {
-                    $this->removeContext($contextString);
-                } else {
-                    $readChars .= $reader->getChar();
-                }  
-                
-                // consume character.
-                $isConsuming = $reader->consumeChar();
-                // skip current iteration.
-                continue;
-            }
-            
+        do {            
             /**
              * Collect characters that form a parameter.
              */
-            if ($this->hasContext($contextParam)) {
-                switch ($reader->getChar()) {
-                    case '"':
-                    case '\'':
-                        // beginning of string literal found.
-                        $this->addContext($contextString);
-                        // store string literal character.
-                        $stringLiteral = $reader->getChar();
-                        break;
-                    case '(':
-                        $parenthesesCount++;
-                        break;
-                    case ')':
-                        $parenthesesCount--;
-                    case ',':
-                        $this->addToken(new Token(self::T_PARAM_VALUE, $readChars));
-                        // empty stored characters.
-                        $readChars = '';
-                        break;
-                    case '=':
-                        $this->addToken(new Token(self::T_PARAM_NAME, $readChars));
-                        // empty stored characters.
-                        $readChars = '';
-                        break;
-                    default:
-                        $readChars .= $reader->getChar();
-                        break;
-                }
+            if ($this->hasContext($contextParams)) {
+                // store word.
+                $readChars .= $reader->getWord();
+                // recalculate parentheses.
+                $parenthesesCount += substr_count($reader->getWord(), '(');
+                $parenthesesCount -= substr_count($reader->getWord(), ')');
                 
                 // end of parameter list found.
                 if ($parenthesesCount === 0) {
-                    $this->removeContext($contextParam);
+                    $this->addToken(new Token(self::T_PARAMS, $readChars));
+                    // empty stored characters.
+                    $readChars = '';
+                    // remove context.
+                    $this->removeContext($contextParams);
                 }
                 
                 // consume character.
-                $isConsuming = $reader->consumeChar();
+                $isConsuming = $reader->consumeWord();
                 // skip current iteration.
                 continue;
             }
@@ -219,9 +156,9 @@ class AnnotationScanner extends AbstractScanner
                 
                 // beginning of parameter list found.
                 if ($reader->getChar() === '(') {
-                    $this->addContext($contextParam);
-                    // set initial parentheses count.
-                    $parenthesesCount = 1;
+                    $this->addContext($contextParams);
+                    // skip current iteration.
+                    continue;
                 }
                 
                 // consume character.
@@ -233,7 +170,7 @@ class AnnotationScanner extends AbstractScanner
             /**
              * Consume characters until a tag name is found.
              */
-            if ($this->hasContext($contextDocBlock)) {
+            if ($this->hasContext($contextDocBlock)) { 
                 // beginning of tag name found.
                 if ($reader->getChar() === '@') {
                     $this->addContext($contextClass);

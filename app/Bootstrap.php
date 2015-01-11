@@ -39,11 +39,17 @@ class Bootstrap extends Application
     {    
         $fooObject = new Foo();
         
-        $classDescriptor = new ClassDescriptor($fooObject);
-        $loader = $classDescriptor->getAnnotationLoader();
-        $loader->getAnnotation('Test');
+        $start = microtime(true);
         
-        //$annotations = $classDescriptor->getAnnotations();
+        $classDescriptor = new ClassDescriptor($fooObject);
+        //$loader = $classDescriptor->getAnnotationLoader();
+        //$loader->getAnnotation('Test');
+        
+        $annotations = $classDescriptor->getAnnotations();
+        
+        $elapsed = microtime(true) - $start;
+        
+        echo $elapsed;
     }
  
     protected function _initUri()

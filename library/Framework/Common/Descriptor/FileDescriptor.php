@@ -39,7 +39,6 @@
 
 namespace Framework\Common\Descriptor;
 
-use ReflectionClass;
 use SplFileObject;
 
 use Framework\Io\Exception\AccessDeniedException;
@@ -228,6 +227,7 @@ class FileDescriptor
      *
      * @param int $lineNumber the maximum number of lines to read.
      * @return string the content of the file, or an empty string if there is nothing to read.
+     * @throws AccessDeniedException if the file to describe has no read permissions.
      */
     private function getFileContent($lineNumber = -1)
     {
