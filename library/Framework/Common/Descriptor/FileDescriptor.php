@@ -63,7 +63,7 @@ class FileDescriptor
     const DEFAULT_NAMESPACE = 'global';
 
     /**
-     * A multidimensional array containing namespaces.
+     * An array containing information about namespaces.
      *
      * @var array
      */
@@ -86,7 +86,7 @@ class FileDescriptor
     /**
      * Create a FileDescriptor.
      *
-     * @param string $filename absolute path to a file to describe.
+     * @param string $filename the absolute path to a file.
      */
     public function __construct($filename)
     {    
@@ -97,7 +97,7 @@ class FileDescriptor
     /**
      * Returns a collection of class names for the given namespace.
      *
-     *
+     * @param string $namespace the namespace for which to return class names.
      * @return array a numeric array of class names.
      */
     public function getClasses($namespace = self::DEFAULT_NAMESPACE)
@@ -128,12 +128,13 @@ class FileDescriptor
      *     ),
      * )
      *
+     * @param string $namespace the namespace for which to return use statements.
      * @return array a multidimensional array of use statements.
      */
     public function getUses($namespace = self::DEFAULT_NAMESPACE)
     {
         $namespaceKey = Arrays::normalizeKey($namespace);
-    
+
         $uses = array();
         if (isset($this->namespaces[$namespaceKey]['uses'])) {
             $uses = $this->namespaces[$namespaceKey]['uses'];
@@ -142,7 +143,7 @@ class FileDescriptor
     }
 
     /**
-     * Introspects the file in which the class has been defined.
+     * Introspects the given file.
      *
      * @return void
      */
@@ -152,11 +153,12 @@ class FileDescriptor
             return;
         }
         
+        // set namespace to 'global'.
         $namespaceKey = Arrays::normalizeKey(self::DEFAULT_NAMESPACE);
         
         $scanner = new PhpScanner($this->getFileContent());
         $tokens = $scanner->scan();
-        
+
         foreach ($tokens as $token) {            
             switch ($token->identify()) {
                 case PhpScanner::T_NAMESPACE:
@@ -189,6 +191,7 @@ class FileDescriptor
      * @param string $filename the file that will be parsed.
      * @throws InvalidArgumentException if the given argument is not of type string.
      * @throws FileNotFoundException if given path point to a non-existing file.
+     * @link http://php.net/manual/en/class.splfileobject.php
      */
     private function createFileObject($filename)
     {
@@ -217,7 +220,7 @@ class FileDescriptor
     }
     
     /**
-     * Returns the content of the file in which the class has been defined.
+     * Returns the content of the file.
      *
      * Unlike functions such as {@link file_get_contents} that reads an entire file into a string
      * this method will read the file line-by-line. Although reading a file line-by-line is slightly

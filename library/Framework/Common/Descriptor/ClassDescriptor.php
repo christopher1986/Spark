@@ -41,7 +41,7 @@ namespace Framework\Common\Descriptor;
 
 use ReflectionClass;
 
-use Framework\Cache\ArrayStorage;
+use Framework\Cache\Storage\ArrayStorage;
 use Framework\Common\Annotation\AnnotationLoader;
 use Framework\Common\Annotation\AnnotationScanner;
 
@@ -81,10 +81,12 @@ class ClassDescriptor
     {    
         $this->setClass($class);
         
+        /*
         $fileDescriptor = new FileDescriptor($this->getFileName());
         echo '<pre>';
         var_dump($fileDescriptor->getUses($this->getNamespaceName()));
         echo '</pre>';
+        */
     }
     
     public function getAnnotationLoader()

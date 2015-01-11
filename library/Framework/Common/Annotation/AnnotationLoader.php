@@ -2,11 +2,11 @@
 
 namespace Framework\Common\Annotation;
 
-
-use Framework\Cache\ArrayStorage;
+use Framework\Cache\Storage\ArrayStorage;
 use Framework\Common\Annotation\Resolver\ResolverInterface;
 use Framework\Common\Annotation\Resolver\AnnotationResolver;
 use Framework\Common\Descriptor\ClassDescriptor;
+use Framework\Common\Descriptor\FileDescriptor;
 use Framework\Util\Strings;
 
 class AnnotationLoader
@@ -39,7 +39,7 @@ class AnnotationLoader
      */
     public function __construct($class)
     {
-        $this->setClassDescriptor($class); 
+        $this->setClass($class); 
     }
     
     public function getAnnotation($annotationName)
@@ -53,7 +53,7 @@ class AnnotationLoader
      *
      * @param mixed a class to describe or a ClassDescriptor.
      */
-    private function setClassDescriptor($class)
+    private function setClass($class)
     {        
         if (is_string($class) || (is_object($class) && !($class instanceof ClassDescriptor))) {
             $class = new ClassDescriptor($class);
@@ -75,16 +75,16 @@ class AnnotationLoader
      *
      * @return ClassDescriptor object that describes the class.
      */
-    private function getClassDescriptor()
+    private function getClass()
     {
         return $this->classDescriptor;
     }
     
     /**
-     * Returns a multidimensional array consisting of use statements.
+     * Returns an array consisting of use statements.
      *
-     * Will attempt to load the use statements from a cache, otherwise the namespace of the class will
-     * be introspected and any statement found during that introspection will be stored in the cache.
+     * Attempts to load use statements from a storage, otherwise the file which contains the class will be
+     * introspected and the result of that introspection will be added to the storage.
      *
      * @return array a multidimensional array of use statements
      * @see NamespaceDescriptor::getUseStatements()
@@ -92,40 +92,23 @@ class AnnotationLoader
     private function getUseStatements()
     {    
         $uid = $this->getClassUID();
-        
-        $info = ($this->getCache()->has($uid)) ? $this->getCache()->get($uid) : array();
-        if (isset($info['uses']) && is_array($info['uses'])) {
-            return $info['uses'];
+        if ($this->getCache()->has($uid)) {
+            return $this->getCache()->get($uid);
         }
-        
-        if ($statements = $this->getClassDescriptor()->getUseStatements()) {
-            foreach ($statements as $statement) {
-                $use = (isset($statement['use'])) ? trim((string) $statement['use'], '\\') : '';
-                $as  = (isset($statement['as']) && $statement['as'] !== null) ? $statement['as'] : $use;
+
+        $uses = array();
+        $descriptor = new FileDescriptor($this->getClass()->getFileName());
+        if ($useStatements = $descriptor->getUses('Main\\Debug')) {
+            foreach ($useStatements as $useStatement) {
+                $use = (isset($useStatement['use'])) ? trim((string) $useStatement['use'], '\\') : '';
+                $as  = (isset($useStatement['as']) && $useStatement['as'] !== null) ? $useStatement['as'] : $use;
                 
-                $info['uses'][$use] = $as;
+                $uses[$use] = $as;
             }
-            $this->getCache()->add($uid, $info);
-        }
-        
-        return $info['uses'];
-    }
-    
-    private function getNamespace()
-    {
-        $uid = $this->getClassUID();
-        
-        $info = array();
-        if ($info = ($this->getCache()->get($uid)) !== null) {
-            if (isset($info['namespace']) && is_string($info['namespace'])) {
-                return $info['namespace'];
-            } 
+            $this->getCache()->add($uid, $uses);
         }
 
-        $info['namespace'] = $this->getClassDescriptor()->getNamespaceName();
-        $this->getCache()->add($uid, $info);
-
-        return $info['namespace'];
+        return $uses;
     }
     
     /**
@@ -148,10 +131,9 @@ class AnnotationLoader
      */
     private function getClassUID()
     {
-        $classDescriptor = $this->getClassDescriptor();
-        $filename = ($classDescriptor->getFileName() !== false) ? $descriptor->getFileName() : '';
-        
-        return md5(sprintf('%s::%s', $filename, $classDescriptor->getShortName()));
+        $class = $this->getClass();
+        $filename = ($class->getFileName() !== false) ? $class->getFileName() : '';
+        return md5(sprintf('%s::%s', $filename, $class->getShortName()));
     }
     
     /**
@@ -170,13 +152,13 @@ class AnnotationLoader
                 (is_object($annotationName) ? get_class($annotationName) : gettype($annotationName))
             ));
 	    }
-    
+
         // annotation already fully qualified.
-        if (strpos($annotationName, '\\') !== 0) {
+        if (($pos = strpos($annotationName, '\\')) !== false && $pos > 0) {
             return $annotationName;
         }
         
-        $uses = $this->getUseStatements();        
+        $uses = $this->getUseStatements();      
         if (!empty($uses)) {
             $alias = $annotationName;
             if (($pos = strpos($annotationName, '\\')) !== false) {
