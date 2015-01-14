@@ -152,14 +152,9 @@ class AnnotationLoader
                 (is_object($annotationName) ? get_class($annotationName) : gettype($annotationName))
             ));
 	    }
-
-        // annotation already fully qualified.
-        if (($pos = strpos($annotationName, '\\')) !== false && $pos > 0) {
-            return $annotationName;
-        }
         
         $uses = $this->getUseStatements();      
-        if (!empty($uses)) {
+        if (!empty($uses)) {        
             $alias = $annotationName;
             if (($pos = strpos($annotationName, '\\')) !== false) {
                 $alias = substr($annotationName, 0, $pos);

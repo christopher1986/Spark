@@ -65,6 +65,13 @@ class ClassDescriptor extends ReflectionClass
      */
     private $annotationLoader;
     
+    /**
+     * A flag to indicate if the class has been introspected.
+     *
+     * @var bool
+     */
+    private $hasIntrospected = false;
+    
     public function getAnnotationLoader()
     {
         if ($this->annotationLoader === null) {
@@ -79,6 +86,7 @@ class ClassDescriptor extends ReflectionClass
         if ($this->annotations === null) {
             $scanner = new AnnotationScanner($this->getDocComment());
             $tokens = $scanner->scan();
+            //var_dump($tokens);
         }
         
         return $this->annotations;

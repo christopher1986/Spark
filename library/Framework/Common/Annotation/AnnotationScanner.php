@@ -58,20 +58,6 @@ use Framework\Util\Strings;
 class AnnotationScanner extends AbstractScanner
 {
     /**
-     * Symbolic name for a annotation name.
-     * 
-     * var int
-     */
-    const T_ANNOTATION_NAME = 100;
-    
-    /**
-     * Symbolic name for a parameter value.
-     * 
-     * var int 
-     */
-    const T_PARAMS = 200;
-
-    /**
      * A reader capable of reading characters from a stream.
      *
      * @var CachedReader
@@ -85,6 +71,8 @@ class AnnotationScanner extends AbstractScanner
      */
     private $tokens;
 
+    private $docComment;
+
     /**
      * Create a new scanner to analyse the string that contains the documentation comments.
      *
@@ -93,7 +81,106 @@ class AnnotationScanner extends AbstractScanner
      */
     public function __construct($docComment)
     {
-        $this->setReader(new StringReader($docComment));
+        $this->docComment = $docComment;
+    }
+    
+    const T_NONE                = 1;
+    const T_INTEGER             = 2;
+    const T_STRING              = 3;
+    const T_FLOAT               = 4;
+
+    // All tokens that are also identifiers should be >= 100
+    const T_IDENTIFIER          = 100;
+    const T_AT                  = 101;
+    const T_CLOSE_CURLY_BRACES  = 102;
+    const T_CLOSE_PARENTHESIS   = 103;
+    const T_COMMA               = 104;
+    const T_EQUALS              = 105;
+    const T_FALSE               = 106;
+    const T_NAMESPACE_SEPARATOR = 107;
+    const T_OPEN_CURLY_BRACES   = 108;
+    const T_OPEN_PARENTHESIS    = 109;
+    const T_TRUE                = 110;
+    const T_NULL                = 111;
+    const T_COLON               = 112;
+
+    protected $noCase = array(
+        '@'  => self::T_AT,
+        ','  => self::T_COMMA,
+        '('  => self::T_OPEN_PARENTHESIS,
+        ')'  => self::T_CLOSE_PARENTHESIS,
+        '{'  => self::T_OPEN_CURLY_BRACES,
+        '}'  => self::T_CLOSE_CURLY_BRACES,
+        '='  => self::T_EQUALS,
+        ':'  => self::T_COLON,
+        '\\' => self::T_NAMESPACE_SEPARATOR
+    );
+
+    protected $withCase = array(
+        'true'  => self::T_TRUE,
+        'false' => self::T_FALSE,
+        'null'  => self::T_NULL
+    );
+
+    
+    /**
+     * {@inheritdoc}
+     */
+    protected function getCatchablePatterns()
+    {
+        return array(
+            '[a-z_\\\][a-z0-9_\:\\\]*[a-z]{1}',
+            '(?:[+-]?[0-9]+(?:[\.][0-9]+)*)(?:[eE][+-]?[0-9]+)?',
+            '"(?:[^"]|"")*"',
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getNonCatchablePatterns()
+    {
+        return array('\s+', '\*+', '(.)');
+    }
+    
+    /**
+     * {@inheritdoc}
+     *
+     * @param string $value
+     *
+     * @return int
+     */
+    protected function getType(&$value)
+    {
+        $type = self::T_NONE;
+
+        if ($value[0] === '"') {
+            $value = str_replace('""', '"', substr($value, 1, strlen($value) - 2));
+
+            return self::T_STRING;
+        }
+
+        if (isset($this->noCase[$value])) {
+            return $this->noCase[$value];
+        }
+
+        if ($value[0] === '_' || $value[0] === '\\' || ctype_alpha($value[0])) {
+            return self::T_IDENTIFIER;
+        }
+
+        $lowerValue = strtolower($value);
+
+        if (isset($this->withCase[$lowerValue])) {
+            return $this->withCase[$lowerValue];
+        }
+
+        // Checking numeric value
+        if (is_numeric($value)) {
+            return (strpos($value, '.') !== false || stripos($value, 'e') !== false)
+                ? self::T_FLOAT : self::T_INTEGER;
+        }
+
+        return $type;
     }
     
     /**
@@ -101,105 +188,22 @@ class AnnotationScanner extends AbstractScanner
      */
     public function scan()
     {    
-        $reader = $this->getReader();
-        
-        static $contextDocBlock = 0x01;
-        static $contextClass    = 0x02;
-        static $contextParams   = 0x04;
-        
-        // count number of parentheses found.
-        $parenthesesCount = 0;
-        // store characters found by reader.
-        $readChars = '';
-        
-        do {            
-            /**
-             * Collect characters that form a parameter.
-             */
-            if ($this->hasContext($contextParams)) {
-                // store word.
-                $readChars .= $reader->getWord();
-                // recalculate parentheses.
-                $parenthesesCount += substr_count($reader->getWord(), '(');
-                $parenthesesCount -= substr_count($reader->getWord(), ')');
-                
-                // end of parameter list found.
-                if ($parenthesesCount === 0) {
-                    $this->addToken(new Token(self::T_PARAMS, $readChars));
-                    // empty stored characters.
-                    $readChars = '';
-                    // remove context.
-                    $this->removeContext($contextParams);
-                }
-                
-                // consume character.
-                $isConsuming = $reader->consumeWord();
-                // skip current iteration.
-                continue;
-            }
-        
-            /**
-             * Collect characters that form the tag name.
-             */
-            if ($this->hasContext($contextClass)) {
-                // end of tag name found.
-                if (in_array($reader->getChar(), array(' ', '(')) || $reader->peek(1) === null) {
-                    $this->addToken(new Token(self::T_ANNOTATION_NAME, $readChars));
-                    // empty stored characters.
-                    $readChars = '';
-                    // remove context.
-                    $this->removeContext($contextClass);
-                } else {
-                    // still collecting characters.
-                    $readChars .= $reader->getChar();
-                }
-                
-                // beginning of parameter list found.
-                if ($reader->getChar() === '(') {
-                    $this->addContext($contextParams);
-                    // skip current iteration.
-                    continue;
-                }
-                
-                // consume character.
-                $isConsuming = $reader->consumeChar();
-                // skip current iteration.
-                continue;
-            }
+        static $regex;
 
-            /**
-             * Consume characters until a tag name is found.
-             */
-            if ($this->hasContext($contextDocBlock)) { 
-                // beginning of tag name found.
-                if ($reader->getChar() === '@') {
-                    $this->addContext($contextClass);
-                }
+        if ( ! isset($regex)) {
+            $regex = '/(' . implode(')|(', $this->getCatchablePatterns()) . ')|'
+                   . implode('|', $this->getNonCatchablePatterns()) . '/i';
+        }
 
-                // characters that are allowed to precede a tag name.
-                if (ctype_space($reader->getChar()) || in_array($reader->getChar(), array('*', '@'))) {
-                    // consume character.
-                    $isConsuming = $reader->consumeChar();
-                    // skip current iteration.
-                    continue; 
-                }
-            }
-            
-            /**
-             * Set context to docblock.
-             */
-            if ($reader->getWord() === '/**') {
-                // add doblock to context.
-                $this->addContext($contextDocBlock);
-                // consume word.
-                $isConsuming = $reader->consumeWord();
-                // skip current iteration.
-                continue;
-            }   
-                     
-            // consume the current line.
-            $isConsuming = $reader->consumeLine();
-        } while ($isConsuming);
+        $flags = PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
+        $matches = preg_split($regex, $this->docComment, -1, $flags);
+
+        foreach ($matches as $match) {
+            // Must remain before 'value' assignment since it can change content
+            $type = $this->getType($match[0]);
+
+            $this->addToken(new Token($type, $match[0]));
+        }
 
         return $this->getTokens();
     }
