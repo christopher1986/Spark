@@ -86,7 +86,9 @@ class ClassDescriptor extends ReflectionClass
         if ($this->annotations === null) {
             $scanner = new AnnotationScanner($this->getDocComment());
             $tokens = $scanner->scan();
-            //var_dump($tokens);
+            echo '<pre>';
+            var_dump($tokens);
+            echo '</pre>';
         }
         
         return $this->annotations;
