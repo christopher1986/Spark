@@ -37,13 +37,21 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Framework\Io\Exception;
+namespace Framework\Cache;
 
-class AccessDeniedException extends IOException
+/**
+ * The ConfigurationCapableInterface interface exposes the cnfiguration of a storage through the
+ * {@link ConfigurationCapableInterface::getConfiguration()} method.
+ *
+ * @author Chris Harris <c.harris@hotmail.com>
+ * @version 1.0.0 
+ */
+interface ConfigurationCapableInterface
 {
-    public function __construct($path, $message, $code = 0, \Exception $previous = null)
-    {
-        $errorMsg = sprintf('path: %s, reason: %s', $path, $message);
-        parent::__construct($errorMsg, $code, $previous);
-    }
+    /**
+     * Returns the configuration for a storage.
+     *
+     * @return Configuration a configuration object.
+     */
+    public function getConfiguration();
 }

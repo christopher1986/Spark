@@ -45,6 +45,6 @@ namespace Framework\Io\Exception;
  * @author Chris Harris
  * @version 1.0.0
  */
-class IOException extends \Exception implements \ExceptionInterface
+class IOException extends \Exception
 {
 }

@@ -39,15 +39,16 @@
 
 namespace Framework\Cache;
 
-use Framework\Cache\Configuration\ConfigurationInterface;
-
 /**
- * A storage that is configurable.
+ * The ConfigurationAwareInterface interface allows a storage to store and retrieve a configuration object.
+ * 
+ * A configuration object determines how a storage is setup and it also determines what a storage can store
+ * and retrieve from the cache.
  *
  * @autor Chris Harris
  * @version 1.0.0
  */
-interface ConfigurableInterface
+interface ConfigurationAwareInterface extends ConfigurationCapableInterface
 {
     /**
      * Configure the storage.

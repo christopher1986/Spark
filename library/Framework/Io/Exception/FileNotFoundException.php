@@ -37,7 +37,7 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-use Framework\Io\Exception;
+namespace Framework\Io\Exception;
 
 class FileNotFoundException extends IOException
 {

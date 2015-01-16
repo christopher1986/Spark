@@ -2,8 +2,8 @@
 
 namespace Framework\Cache\Configuration;
 
-use Namespace\Io\Exception\FileNotFoundException;
-use Namespace\Io\Exception\AccessDeniedException;
+use Framework\Io\Exception\FileNotFoundException;
+use Framework\Io\Exception\AccessDeniedException;
 
 class FileConfiguration extends Configuration
 {
@@ -26,14 +26,14 @@ class FileConfiguration extends Configuration
      *
      * @var int
      */
-    private $filePermission = 0700;
+    private $filePermission = 0600;
     
     /**
      * The directory permission.
      *
      * @var int
      */
-    private $dirPermission = 0600;
+    private $dirPermission = 0700;
     
     /**
      * Set the cache directory.
@@ -93,12 +93,12 @@ class FileConfiguration extends Configuration
         }
         
         $fileExtension = Strings::addLeading(strtolower($extension), '.');
-        $allowedExtensions = array('.tag', '.dat', '.php');
+        $allowedExtensions = array('.dat', '.php');
         if (!in_array($fileExtension, $allowedExtensions)) {
             throw new \InvalidArgumentException(sprintf(
                 '%s: only (%s) are valid file extensions; received "%s"',
                 __METHOD__,
-                implode(',' $allowedExtensions),
+                implode(',', $allowedExtensions),
                 (is_object($fileExtension) ? get_class($fileExtension) : gettype($fileExtension))
             ));
         }
@@ -114,5 +114,79 @@ class FileConfiguration extends Configuration
     public function getFileExtension()
     {
         return $this->fileExtension;
+    }
+    
+    /**
+     * Set the permission for a cache file.
+     *
+     * @param string|int file permission represented as a octal value.
+     * @throws InvalidArgumentException if the given argument is not a numeric value.
+     * @throws RuntimeException if the given permission does not meet the minimum permission.
+     */
+    public function setFilePermission($mode)
+    {
+        if (!is_numeric($mode)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a numeric argument; received "%s"',
+                __METHOD__,
+                (is_object($mode) ? get_class($mode) : gettype($mode))
+            ));
+        }
+        
+        if (($mode & 0600) !== 0600) {
+            throw new \RuntimeException(sprintf(
+                '%s: owner must be able to execute, read and write to file; permission should be 0600.',
+                __METHOD__
+            ));
+        }
+        
+        $this->filePermission = $mode;
+    }
+    
+    /**
+     * Returns the permission for a cache files.
+     *
+     * @return file permission.
+     */
+    public function getFilePermission()
+    {
+        return $this->filePermission;
+    }
+    
+    /**
+     * Set the permission for a cache directory.
+     *
+     * @param string|int file permission represented as a octal value.
+     * @throws InvalidArgumentException if the given argument is not a numeric value.
+     * @throws RuntimeException if the given permission does not meet the minimum permission.
+     */
+    public function setDirPermission($mode)
+    {
+        if (!is_numeric($mode)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a numeric argument; received "%s"',
+                __METHOD__,
+                (is_object($mode) ? get_class($mode) : gettype($mode))
+            ));
+        }
+        
+        if (($mode & 0700) !== 0700) {
+            throw new \RuntimeException(sprintf(
+                '%s: owner must be able to read and write to directory; permission should be 0700.',
+                __METHOD__
+            ));
+        }
+        
+        $this->dirPermission = $mode;
+    }
+    
+    /**
+     * Returns the permission for a cache directory.
+     *
+     * @return directory permission.
+     */
+    public function getDirPermission()
+    {
+        return $this->dirPermission;
     }
 }

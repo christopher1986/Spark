@@ -45,6 +45,6 @@ namespace Framework\Io\Exception;
  * @author Chris Harris
  * @version 1.0.0
  */
-class UnsupportedOperationException extends \Exception implements \ExceptionInterface
+class UnsupportedOperationException extends \Exception
 {
 }

@@ -9,6 +9,9 @@ use Framework\Loader\AutoloaderFactory;
 use Framework\Net\Uri;
 use Framework\Common\Descriptor\ClassDescriptor;
 
+use Framework\Cache\Configuration\FileConfiguration;
+use Framework\Cache\Storage\FileStorage;
+
 require_once dirname(__DIR__) . '/library/Framework/Application.php';
 
 /**
@@ -34,7 +37,29 @@ class Bootstrap extends Application
             ),
         ));
     }
- 
+    
+    protected function _initCache()
+    {
+        $config = new FileConfiguration(array(
+            'cache_dir' => __DIR__ . \DIRECTORY_SEPARATOR . 'cache',
+            'file_permission' => 0644,
+            'dir_permission' => 0755,
+        ));
+        
+        $storage = new FileStorage($config);
+        $storage->set('Foo', 'test');
+        $storage->add('Number', 1);
+        
+        $value = $storage->get('Number');
+        var_dump($value);
+        
+        $storage->increment('Number');
+        
+        $value = $storage->get('Number');
+        var_dump($value);
+    }
+    
+    /*
     protected function _initReflection()
     {    
         $fooObject = new Foo();
@@ -56,4 +81,5 @@ class Bootstrap extends Application
     {
         //$uri = new Uri('http://www.google.nl');
     }
+    */
 }

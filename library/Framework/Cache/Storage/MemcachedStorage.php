@@ -6,7 +6,6 @@ use Memcached;
 
 use Framework\Cache\AvailableSpaceCapableInterface;
 use Framework\Cache\CheckAndSetCapableInterface;
-use Framework\Cache\ConfigurableInterface;
 use Framework\Cache\ResultCodeCapableInterface;
 use Framework\Cache\ResultMessageCapableInterface;
 use Framework\Cache\TotalSpaceCapableInterface;
@@ -17,14 +16,14 @@ use Framework\Cache\Memcached\Storage\ServerSet;
  * A storage class that supports the storage of values through a general-purpose distributed memory caching system known as Memcached.
  * 
  * A Memcached server typically stores values into the RAM which allows any value given to this storage to be available for prolonged
- * use. A server will keep values in RAM until the lifetime of that has expired or if the server runs out of RAM, in which case it will
- * discard the oldest values. Therefore, clients must treat Memcached as a transitory cache; they cannot assume that data stored in
- * Memcached is still there when they need it. 
+ * use. A server will keep values in RAM until the lifetime of that value has expired or if the server runs out of RAM, in which case 
+ * it will discard the oldest values. Therefore, clients must treat Memcached as a transitory cache; they cannot assume that data stored 
+ * in Memcached is still there when they need it. 
  *
  * @author Chris Harris
  * @version 1.0.0
  */
-class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableInterface, CheckAndSetCapableInterface, ConfigurableInterface, ResultCodeCapableInterface, ResultMessageCapableInterface, TotalSpaceCapableInterface
+class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableInterface, CheckAndSetCapableInterface, ResultCodeCapableInterface, ResultMessageCapableInterface, TotalSpaceCapableInterface
 {
     /**
      * A Memcached instance on which this storage operates.
@@ -34,22 +33,12 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
     private $memcached;
 
     /**
-     * Create a MemcachedStorage.
-     *
-     * @param array|Traversable|ConfigurationInterface $config configuration for this storage.
-     */
-    public function __construct($config)
-    {
-        $this->setConfiguration($config);
-    }
-
-    /**
      * {@inheritDoc}
      */
     protected function doGet($key, &$casToken = null)
     {
-        $internalKey = $this->getInternalKey($key);
-        return $this->getMemcached()->get($internalKey, $casToken);
+        $normalizedKey = $this->normalizeKey($key);
+        return $this->getMemcached()->get($normalizedKey, $casToken);
     }
     
     /**
@@ -72,9 +61,9 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doAdd($key, $value)
     {
-        $internalKey = $this->getInternalKey($key);
+        $normalizedKey = $this->normalizeKey($key);
         $expiration  = $this->getExpirationTime();
-        return $this->getMemcached()->add($internalKey, $value, $expiration);
+        return $this->getMemcached()->add($normalizedKey, $value, $expiration);
     }
     
     /**
@@ -82,9 +71,9 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doSet($key, $value)
     {
-        $internalKey = $this->getInternalKey($key);
+        $normalizedKey = $this->normalizeKey($key);
         $expiration  = $this->getExpirationTime();
-        return $this->getMemcached()->set($internalKey, $value, $expiration);
+        return $this->getMemcached()->set($normalizedKey, $value, $expiration);
     }
     
     /**
@@ -92,9 +81,9 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doReplace($key, $value)
     {
-        $internalKey = $this->getInternalKey($key);
+        $normalizedKey = $this->normalizeKey($key);
         $expiration  = $this->getExpirationTime();
-        return $this->getMemcached()->replace($internalKey, $value, $expiration);
+        return $this->getMemcached()->replace($normalizedKey, $value, $expiration);
     }
     
     /**
@@ -102,10 +91,10 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doIncrement($key, $offset = 1, $initial = 0)
     {
-        $internalKey = $this->getInternalKey($key);
+        $normalizedKey = $this->normalizeKey($key);
         $expiration  = $this->getExpirationTime();
         
-        return $this->getMemcached->increment($internalKey, (int) $offset, (int) $initial, $expiration);
+        return $this->getMemcached->increment($normalizedKey, (int) $offset, (int) $initial, $expiration);
     }
     
     /**
@@ -113,10 +102,10 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doDecrement($key, $offset = 1, $initial = 0)
     {
-        $internalKey = $this->getInternalKey($key);
+        $normalizedKey = $this->normalizeKey($key);
         $expiration  = $this->getExpirationTime();
         
-        return $this->getMemcached->decrement($internalKey, (int) $offset, (int) $initial, $expiration);
+        return $this->getMemcached->decrement($normalizedKey, (int) $offset, (int) $initial, $expiration);
     }
     
     /**
@@ -124,10 +113,10 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doTouch($key)
     {
-        $internalKey = $this->getInternalKey($key);
+        $normalizedKey = $this->normalizeKey($key);
         $expiration  = $this->getExpirationTime();
         
-        return $this->getMemcached->touch($internalKey, $expiration);
+        return $this->getMemcached->touch($normalizedKey, $expiration);
     }
     
     /**
@@ -135,9 +124,9 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
      */
     protected function doDelete($key)
     {
-        $internalKey  = $this->getInternalKey($key);
+        $normalizedKey  = $this->normalizeKey($key);
                     
-        return $this->getMemcached->delete($internalKey);
+        return $this->getMemcached->delete($normalizedKey);
     }
     
     /**
@@ -184,9 +173,7 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
     }
     
     /**
-     * Returns the configuration used by this storage.
-     *
-     * @return MemcachedConfiguration a configuration object.
+     * {@inheritDoc}
      */
     public function getConfiguration()
     {
@@ -315,5 +302,32 @@ class MemcachedStorage extends AbstractStorage implements AvailableSpaceCapableI
         }
         
         $this->memcached = $memcached;
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * The key returned by this method consists of a normalized key and an optional prefix
+     * that is prepended to the already normalized key.
+     *
+     * @param  string $key the key to normalized.
+     * @return string a normalized key.
+     * @throws InvalidArgumentException if the key is empty or does not match the key pattern.
+     */
+    public function normalizeKey($key)
+    {
+        $normalizedKey = parent::normalizeKey($key);
+
+        // normalize first uppercase character.
+        $letters = function($letters) {
+            return sprintf('-%s', strtolower(trim($letters[1])));
+        };
+        
+        // concatenate prefix with normalized key.
+        if (($prefix = $this->getConfiguration()->getPrefix()) !== '') {
+            $normalizedKey = sprintf('%s-%s', $prefix, $normalizedKey);
+        }
+        
+        return preg_replace_callback('#([A-Z\s]+)#', $letters, Strings::lcfirst($normalizedKey));
     }
 }

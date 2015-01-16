@@ -2,14 +2,28 @@
 
 namespace Framework\Cache\Storage;
 
+use Framework\Cache\ConfigurationAwareInterface;
+
 /**
  * A abstract storage from which other storages can be derived.
  *
  * @author Chris Harris
  * @version 1.0.0
  */
-abstract class AbstractStorage implements StorageInterface
+abstract class AbstractStorage implements StorageInterface, ConfigurationAwareInterface
 {
+    /**
+     * Create a new AbstractStorage.
+     *
+     * @param array|Traversable|ConfigurationInterface|null $config configuration for this storage, or null to use the default configuration.
+     */
+    public function __construct($config = null)
+    {
+        if ($config !== null) {
+            $this->setConfiguration($config);
+        }
+    }
+
     /** 
      * Retrieve an item.
      *
@@ -145,25 +159,6 @@ abstract class AbstractStorage implements StorageInterface
         }
         
         return $this->doFlush();
-    }
-    
-    /**
-     * Returns an key that is normalized and if present will have a prefix prepended to it. 
-     *
-     * @param string the key from which an internal key is derived.
-     * @return string an internal key.
-     * @see AbstractStorage::normalizeKey($key)
-     */
-    protected function getInternalKey($key)
-    {
-        $normalizedKey = $this->normalizeKey($key);
-        
-        $prefix = $this->getConfiguration()->getPrefix();
-        if (strlen($prefix) > 0) {
-            $normalizedKey =  $prefix . $normalizedKey;
-        }
-        
-        return $normalizedKey;
     }
     
     /**
