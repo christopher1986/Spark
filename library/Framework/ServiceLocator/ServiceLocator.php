@@ -81,7 +81,13 @@ class ServiceLocator implements ServiceLocatorInterface
     private $shared = array();
     
     /**
-     * Register a factory with the service locator.
+     * Register a factory with the service locator. The following code demonstrates
+     * how a factory can be be registered with the service locator.
+     *
+     * $sl = new ServiceLocator();
+     * $sl->factory('Service', function($sl) {
+     *     return new Framework\Service\SomeService();
+     * });
      *
      * @param string $name the name under which to register the factory.
      * @param callable an anonymous function or closure.
@@ -114,7 +120,11 @@ class ServiceLocator implements ServiceLocatorInterface
     }
     
     /**
-     * Register an invokable class with the service locator.
+     * Register an invokable class with the service locator. The following code demonstrates
+     * how an invokable service can be registered with the service locator.
+     *
+     * $sl = new ServiceLocator();
+     * $sl->invokable('Service', 'Framework\Service\SomeService');
      *
      * @param string $name the name under which to register the invokable.
      * @param string $invokable a fully qualified class name.
@@ -147,7 +157,11 @@ class ServiceLocator implements ServiceLocatorInterface
     }
     
     /**
-     * Register a service with the service locator.
+     * Register a service with the service locator. The following code demonstrates
+     * how a service can be registered with the service locator.
+     *
+     * $sl = new ServiceLocator();
+     * $sl->service('Service', new SomeService());
      *
      * @param string $name the name of the service to register.
      * @param mixed $service the service to register.
