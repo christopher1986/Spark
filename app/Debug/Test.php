@@ -3,16 +3,16 @@
 namespace Main\Debug 
 {
     use SplFileObject;
-    use Framework\Common\Annotation\AnnotationScanner as AlsoSomethingElse,
-        Framework\Scanner\PhpScanner as SomethingElse;
-    use Framework\Io\StringReader;
+    use Spark\Common\Annotation\AnnotationLexer as AlsoSomethingElse,
+        Spark\Scanner\PhpScanner as SomethingElse;
+    use Spark\Io\StringReader;
 
     /**
      * A class used for testing purposes of custom reflection methods.
      * A second line
      * 
      * @author Chris Harris
-     * @Framework\Annotation\Test(name = 'chris', age = 28)
+     * @Spark\Annotation\Test(name = 'chris', age = 28)
      */
     class Test
     {
@@ -22,6 +22,14 @@ namespace Main\Debug
          * @var string
          */
         private $name;
+
+        /**
+         * Construct object.
+         */
+        public function __construct()
+        {
+            new StringReader('test');
+        }
 
         /**
          * Set the name.
@@ -47,10 +55,20 @@ namespace Main\Debug
 
 namespace Main\Debug\Something
 {
-    use Framework\Io\StringReader as SomeOtherReader;
+    include_once __DIR__ . '/Test/Test.php';
+
+    use Spark\Io\StringReader as SomeOtherReader;
 
     class TestTwo
     {
+        /**
+         * Construct object.
+         */
+        public function __construct()
+        {
+            echo doSomething();
+        }
+    
         /**
          * The name.
          *
