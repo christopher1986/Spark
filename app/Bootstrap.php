@@ -72,7 +72,6 @@ class Bootstrap extends Application
         }          
         var_dump(microtime(true) - $start);            
     } 
-    */
     
     protected function _initRoutes()
     {   
@@ -95,22 +94,26 @@ class Bootstrap extends Application
         
         exit; 
     }
+    */
     
-    /*
-    protected function initCache()
+
+    protected function _initCache()
     {
         $config = new FileConfiguration(array(
             'cache_dir' => __DIR__ . \DIRECTORY_SEPARATOR . 'cache',
             'file_permission' => 0644,
             'dir_permission' => 0755,
-            'time_to_live' => 2,
+            'time_to_live' => 25,
         ));
         
         $storage = new FileStorage($config);
+
+
+        $storage->clean();
         
-        $storage->deleteExpired();
     }
     
+    /*
     protected function _initReflection()
     {       
         $fooObject = new Foo();

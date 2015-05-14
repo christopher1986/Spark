@@ -18,8 +18,8 @@ class CacheItem extends SplFileObject implements CacheItemInterface
     public function getExpirationTime()
     {
         $this->rewind();
-        $lifetime = (int) $this->fgets();
-        
+                
+        $lifetime = (int) rtrim($this->fgets(), "\r\n");
         return $lifetime;
     }
     

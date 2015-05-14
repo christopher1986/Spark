@@ -131,7 +131,7 @@ abstract class AbstractStorage implements StorageInterface, ConfigurationAwareIn
         if (!$this->getConfiguration()->isWritable()) {
             return false;
         }
-        
+
         return $this->doTouch($key);
     }
     

@@ -25,12 +25,16 @@ class FileStorage extends AbstractStorage
     protected function doGet($key, &$casToken = null)
     {
         $value = null;
-    
-        if ($this->has($key)) {
+
+        $filename = $this->getFileName($key);
+        if (file_exists($filename)) {
             // open cache file.
-            $item = new CacheItem($this->getFileName($key));
-            // get unserialized value.
-            $value = unserialize($item->getCacheData());
+            $item = new CacheItem($filename);
+            
+            if ($this->has($key)) {
+                $value = unserialize($item->getCacheData());
+            }
+            
             // close open file pointer.
             $item = null;
         }
@@ -43,19 +47,19 @@ class FileStorage extends AbstractStorage
      */
     protected function doHas($key)
     {
-        $retval = false;
+        $hasItem = false;
     
         $filename = $this->getFileName($key);
-        if (file_exists($filename)) { 
+        if (file_exists($filename)) {
             // open cache file.
             $item = new CacheItem($filename);
             // determine if cache item is valid.
-            $retval = ($item->getExpirationTime() === 0 || $item->getExpirationTime() > time());
+            $hasItem = !($item->hasExpired());            
             // close open file pointer.
             $item = null;
         }
         
-        return $retval;
+        return $hasItem;
     }
     
     /**
@@ -63,12 +67,12 @@ class FileStorage extends AbstractStorage
      */
     protected function doAdd($key, $value)
     {
-        $filename = $this->getFileName($key);
-        if (!file_exists($filename)) {
-            return $this->set($key, $value);
+        $hasAdded = false;
+        if (!$this->has($key)) {
+            $hasAdded = $this->set($key, $value);
         }
         
-        return false;
+        return $hasAdded;
     }
     
     /**
@@ -76,9 +80,9 @@ class FileStorage extends AbstractStorage
      */
     protected function doSet($key, $value)
     {
-        $config = $this->getConfiguration();
+        $config   = $this->getConfiguration();
         $filename = $this->getFileName($key);
-        $path = pathinfo($filename, \PATHINFO_DIRNAME);
+        $path     = pathinfo($filename, \PATHINFO_DIRNAME);
         
         // create directory.
         if (!is_dir($path)) {
@@ -98,13 +102,13 @@ class FileStorage extends AbstractStorage
         $lines[] = serialize($value);
         
         // create file.
-        $retval = file_put_contents($filename, implode($lines, PHP_EOL));
+        $bytesWritten = file_put_contents($filename, implode($lines, PHP_EOL));
         // change file permission.
-        if ($retval !== false) {
+        if ($bytesWritten !== false) {
             chmod($filename, $config->getFilePermission());
         }
         
-        return ($retval !== false);
+        return ($bytesWritten !== false);
         
     }
     
@@ -165,8 +169,9 @@ class FileStorage extends AbstractStorage
      */
     protected function doTouch($key)
     {
-        $retval = false;
+        $hasTouched = false;
         if ($this->has($key)) {
+
             // open cache file.
             $item = new CacheItem($this->getFileName($key));
             // get unserialized value.
@@ -175,10 +180,10 @@ class FileStorage extends AbstractStorage
             $item = null;
             
             // update lifetime.
-            $retval = $this->set($key, $value);
+            $hasTouched = $this->set($key, $value);
         }
         
-        return $retval;
+        return $hasTouched;
     }
     
     /**
@@ -247,26 +252,29 @@ class FileStorage extends AbstractStorage
      */
     public function deleteExpired()
     {
-        $cacheDir = $this->getConfiguration()->getCacheDir();
         $now = time();
+        
+        $cacheDir   = $this->getConfiguration()->getCacheDir();
+        $folderName = $this->toFileName($this->getConfiguration()->getPrefix());
+        
+        // path to a directory where expired items will be deleted.
+        $path = Strings::addTrailing($cacheDir, \DIRECTORY_SEPARATOR) . $folderName . str_repeat(\DIRECTORY_SEPARATOR . '*', 4);
     
-        $flags = GlobIterator::CURRENT_AS_PATHNAME | GlobIterator::SKIP_DOTS;
-        $it = new GlobIterator(Strings::addTrailing($cacheDir, \DIRECTORY_SEPARATOR) . '*', $flags);
+        $flags = GlobIterator::SKIP_DOTS | GlobIterator::CURRENT_AS_FILEINFO;;
+        $it = new GlobIterator(Strings::addTrailing($path, \DIRECTORY_SEPARATOR) . '*.dat', $flags);
         foreach ($it as $pathName) {
-            var_dump($pathName);
             // check each file manually, it's faster than creating CacheItems.
             if ($it->isFile()) {
                 $handle = fopen($pathName, 'r');
                 if ($handle !== false) {
-                    $lifetime = fgets($handle);
-                    var_dump($lifetime);
+                    $lifetime = (int) rtrim(fgets($handle), "\r\n");
                     if ($lifetime !== 0 && $now > $lifetime) {
                         // close open file pointer.
                         fclose($handle);
                         // remove cache file.
                         @unlink($pathName);
                     } else {                    
-                        // close open fil pointer.
+                        // close open file pointer.
                         fclose($handle);
                     }
                 }
@@ -333,10 +341,10 @@ class FileStorage extends AbstractStorage
     /**
      * Returns an absolute path to a file.
      *
-     * The path preceding the filename contains multiple directories which are 
-     * formed by hashing the key and splitting the hash into 4 equal parts.
-     *
      * @param string $normalizedKey the key for which to return a filename.
+     * @return string an absolute path to a file.
+     * @throws InvalidArgumentException if the given argument is not of type 'string'.
+     * @see FileStorage::getCacheDirectory($normalizedKey); 
      */
     private function getFileName($normalizedKey)
     {
@@ -347,21 +355,42 @@ class FileStorage extends AbstractStorage
                 (is_object($normalizedKey) ? get_class($normalizedKey) : gettype($normalizedKey))
             ));
         }
-    
-        $config = $this->getConfiguration();
-        $path   = Strings::addTrailing($config->getCacheDir(), \DIRECTORY_SEPARATOR);
-        
-        $prefix = $config->getPrefix();
-        if (($folderName = $this->toFileName($prefix)) !== '') {
-            $path .= Strings::addTrailing($folderName, \DIRECTORY_SEPARATOR);
-        }
         
         // append folder names to cache directory.
-        $path .= implode(str_split(md5($normalizedKey), 8), \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+        $path = $this->getCacheDirectory($normalizedKey);
         // prepend if necessary extension with a dot.
-        $extension = Strings::addLeading($config->getFileExtension(), '.');
+        $extension = Strings::addLeading($this->getConfiguration()->getFileExtension(), '.');
         
         return $path . $normalizedKey . $extension;
+    }
+    
+    /**
+     * Returns an absolute path to a directory for the given key.
+     *
+     * The path is created from the given key and contains multiple directories which are formed by 
+     * hashing the key and splitting the hash into 4 equal parts.
+     *
+     * @param string $normalizedKey the key for which to return a path.
+     * @return string an absolute path to a directory for the given key.
+     * @throws InvalidArgumentException if the given argument is not of type 'string'.
+     */
+    private function getCacheDirectory($normalizedKey)
+    {
+        if (!is_string($normalizedKey)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($normalizedKey) ? get_class($normalizedKey) : gettype($normalizedKey))
+            ));
+        }
+    
+        $path = Strings::addTrailing($this->getConfiguration()->getCacheDir(), \DIRECTORY_SEPARATOR);
+        if (($folderName = $this->toFileName($this->getConfiguration()->getPrefix())) !== '') {
+            $path .= Strings::addTrailing($folderName, \DIRECTORY_SEPARATOR);
+        }
+        $path .= implode(str_split(md5($normalizedKey), 8), \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+        
+        return $path;
     }
     
     /**
