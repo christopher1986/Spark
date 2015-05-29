@@ -72,6 +72,7 @@ class Bootstrap extends Application
         }          
         var_dump(microtime(true) - $start);            
     } 
+    */
     
     protected function _initRoutes()
     {   
@@ -94,9 +95,9 @@ class Bootstrap extends Application
         
         exit; 
     }
-    */
     
-
+    
+    /**
     protected function _initCache()
     {
         $config = new FileConfiguration(array(
@@ -107,11 +108,34 @@ class Bootstrap extends Application
         ));
         
         $storage = new FileStorage($config);
+        $storage->add('leo', 'file caching werkt');
 
-
-        $storage->clean();
-        
+        $value = $storage->get('leo');
+        echo $value;
     }
+    */
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     /*
     protected function _initReflection()
