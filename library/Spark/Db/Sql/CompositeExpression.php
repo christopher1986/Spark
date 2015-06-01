@@ -107,13 +107,32 @@ class CompositeExpression implements CompositeInterface
     }
     
     /**
-     * Returns the clause type.
+     * Returns the composite type.
      *
-     * @return string the clause type.
+     * @return string the composite type.
      */
     public function getType()
     {
         return $this->type;
+    }
+ 
+    /**
+     * Add a new expressions to this composite.
+     *
+     * @param string|CompositeExpression $expression a string or composite expression.
+     * @throws \InvalidArgumentException if the given argument is not a string or CompositeExpression.
+     */
+    public function add($expression)
+    {
+        if (!$this->isAllowed($expression)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a non-empty string or CompositeExpression object as argument; received "%s"',
+                __METHOD__,
+                (is_object($expression) ? get_class($expression) : gettype($expression))
+            ));
+        }
+        
+        $this->expressions[] = $expression;
     }
  
     /**
@@ -186,7 +205,7 @@ class CompositeExpression implements CompositeInterface
      */
     protected function isAllowed($expression)
     {
-        return (!empty($expression) || ($expression instanceof self && !$expression->isEmpty()));
+        return ((is_string($expression) && strlen($expression) > 0) || ($expression instanceof self && !$expression->isEmpty()));
     }
     
     /**
@@ -203,5 +222,22 @@ class CompositeExpression implements CompositeInterface
         // will be either 'AND' or 'OR'.
         $glue = sprintf(') %s (', $this->getType());
         return sprintf('(%s)', implode($glue, $this->expressions));
+    }
+    
+    /**
+     * Create a copy of this expression in it's current state.
+     *
+     * When cloning an object it's pointers will be copied. This means that any changes made to a cloned object will
+     * still be reflected on the original object. So by cloning all objects we ensure that a deep copy is performed.
+     *
+     * @link http://php.net/manual/en/language.oop5.cloning.php
+     */
+    public function __clone()
+    {
+        foreach ($this->expressions as $index => $expression) {
+            if (is_object($expression)) {
+                $this->expressions[$index] = clone $expression;
+            }
+        }
     }
 }

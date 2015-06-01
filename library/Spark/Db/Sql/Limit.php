@@ -65,7 +65,7 @@ class Limit
      * @throws InvalidArgumentException if the given argument is not a number or null literal.
      * @throws LogicException if the given limit is a negative number.
      */
-    public function setLimit($limit = null)
+    private function setLimit($limit = null)
     {
         if (!(is_numeric($limit) || $limit === null)) {
             throw new \InvalidArgumentException(sprintf(
@@ -85,16 +85,6 @@ class Limit
     }
     
     /**
-     * Returns the amount of results to retrieve, or null if no limit is set.
-     * 
-     * @return int|null the amount of results to retrieve, or null.
-     */
-    public function getLimit()
-    {
-        return $this->limit;
-    }
-    
-    /**
      * Returns a string representation of this expression.
      *
      * @return string a string representation of this expression.
@@ -102,8 +92,8 @@ class Limit
     public function __toString()
     {
         $limit = '';
-        if (($value = $this->getLimit()) !== null) {
-            $limit = sprintf('LIMIT %d', $value);
+        if (is_numeric($this->limit)) {
+            $limit = sprintf('LIMIT %d', (int) $limit);
         }
         
         return $limit;

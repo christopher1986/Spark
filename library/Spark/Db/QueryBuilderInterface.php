@@ -51,4 +51,13 @@ interface QueryBuilderInterface extends AdapterAwareInterface, AdapterCapableInt
      * @return Select An object to retrieve information from the underlying data source.
      */
     public function select($select);
+    
+    /**
+     * Creates a Select statement using a (raw) vendor-specific expression.
+     *
+     * @param string $expression a raw expression.
+     * @return Select An object to retrieve information from the underlying data source.
+     * @throws InvalidArgumentException if the given argument is not a 'string'type.
+     */
+    public function rawselect($select);
 }

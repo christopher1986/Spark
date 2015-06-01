@@ -77,11 +77,11 @@ class Join
     private $alias = '';
     
     /**
-     * The join condition.
+     * The join condition(s).
      *
-     * @var string
+     * @var CompositeExpression
      */
-    private $condition = '';
+    private $conditions;
     
     /**
      * The join type.
@@ -100,6 +100,8 @@ class Join
      */
     public function __construct($table, $alias, $condition, $type = self::TYPE_INNER_JOIN)
     {
+        $this->conditions = new CompositeExpression();
+    
         $this->setTable($table);
         $this->setAlias($alias);
         $this->setCondition($condition);
@@ -107,71 +109,93 @@ class Join
     }
     
     /**
-     * Set the table join with.
+     * Add one or more join conditions. Creates a logical 'AND' relation with any previous conditions,
+     * and any previously conditions set will be removed.
      *
-     * @param string $table the table to join with.
+     * @param string|array $conditions one or more conditions.
      */
-    public function setTable($table)
+    public function on($conditions)
     {
-        $this->table = $table;
+        $this->conditions->clear();
+        return $this->andOn(func_get_args());
     }
     
     /**
-     * Returns the table to join with.
+     * Add one or more join conditions. Creates a logical 'AND' relation with any previous conditions.
      *
-     * @return string the table to join with.
+     * @param string|array $expressions one or more expressions.
      */
-    public function getTable()
+    public function andOn($expressions)
     {
-        return $this->table;
+        $expressions = (is_array($expressions)) ? $expressions : func_get_args();        
+        $this->createCondition($expressions, CompositeExpression::TYPE_AND);
+        
+        return $this;
+    }
+    
+    /**
+     * Add one or more join conditions. Creates a logical 'OR' relation with any previous conditions.
+     *
+     * @param string|array $expressions one or more expressions.
+     */
+    public function orOn($expressions)
+    {
+        $expressions = (is_array($expressions)) ? $expressions : func_get_args();        
+        $this->createCondition($expressions, CompositeExpression::TYPE_OR);
+        
+        return $this;
+    }
+    
+    /**
+     * Set the table join with.
+     *
+     * @param string $table the table to join with.
+     * @throws InvalidArgumentException if the given argument is not a 'string' type.
+     */
+    private function setTable($table)
+    {
+	    if (!is_string($table)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($table)) ? get_class($table) : gettype($table)
+            ));
+	    }
+	    
+        $this->table = $table;
     }
     
     /**
      * Set alias for table to join with.
      *
      * @param string $alias the table alias to join with.
+     * @throws InvalidArgumentException if the given argument is not a 'string' type.
      */
-    public function setAlias($alias)
+    private function setAlias($alias)
     {
+	    if (!is_string($alias)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($alias)) ? get_class($alias) : gettype($alias)
+            ));
+	    }
+	    
         $this->alias = $alias;
     }
     
     /**
-     * Returns the alias of a table to join with.
+     * The condition that applies to the join.
      *
-     * @return string the alias of a table to join with.
+     * @param string|callable $expression a string containing the expression or a callable.
      */
-    public function getAlias()
-    {
-        return $this->alias;
-    }
-    
-    /**
-     * The condition applied to the join.
-     *
-     * @param string $condition the join condition.
-     */
-    public function setCondition($condition)
-    {
-        if (!is_string($condition)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects a string argument; received "%s"',
-                __METHOD__,
-                (is_object($condition)) ? get_class($condition) : gettype($condition)
-            ));
+    private function setCondition($expression)
+    {        
+        if (is_callable($expression)) {
+            call_user_func($expression, $this);
+        } else {
+            $this->on($expression);
         }
-        
-        $this->condition = $condition;
-    }
-    
-    /**
-     * Returns the condition that applied to the join.
-     *
-     * @return string the join condition.
-     */
-    public function getCondition()
-    {
-        return $this->condition;
     }
     
     /**
@@ -180,7 +204,7 @@ class Join
      * @param int $type the join type.
      * @throws InvalidArgumentException if the given type is not one of the Join constants.
      */
-    public function setType($type)
+    private function setType($type)
     {
         $allowed = array(
             self::TYPE_INNER_JOIN,
@@ -197,26 +221,6 @@ class Join
         }
         
         $this->type = $type;
-    }
-    
-    /**
-     * Returns the join type.
-     *
-     * @return int the join type.
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-    
-    /**
-     * Returns a string representation of this expression.
-     *
-     * @return string a string representation of this expression.
-     */
-    public function __toString()
-    {
-        return sprintf('%1$s JOIN %2$s AS %3$s ON %4$s', $this->getJoinType(), $this->getTable(), $this->getAlias(), $this->getCondition());
     }
     
     /**
@@ -239,5 +243,32 @@ class Join
         }
         
         return $joinType;
+    }
+    
+    /**
+     * Creates a composite of join conditions
+     *
+     * @param array $expressions a collection containing zero or more expressions.
+     * @param int $type the relationship between the one or more join conditions.
+     */
+    private function createCondition(array $expressions, $type = CompositeExpression::TYPE_AND)
+    {
+        $conditions = $this->conditions;
+        if ($conditions->getType() === $type) {
+            $conditions->addAll($expressions);
+        } else {
+            array_unshift($expressions, $conditions);
+            $this->conditions = new CompositeExpression($type, $expressions);
+        }
+    }
+    
+    /**
+     * Returns a string representation of this expression.
+     *
+     * @return string a string representation of this expression.
+     */
+    public function __toString()
+    {
+        return sprintf('%1$s JOIN %2$s AS %3$s ON %4$s', $this->getJoinType(), $this->table, $this->alias, $this->conditions);
     }
 }

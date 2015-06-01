@@ -40,8 +40,7 @@
 namespace Spark\Db\Sql;
 
 /**
- * The From class represents the table to retrieve results from. To accomplish that purpose
- * it decorates an object that implements the {@link IdentifierInterface} interface.
+ * The From class represents the table to retrieve results from.
  *
  * @author Chris Harris
  * @version 1.0.0
@@ -49,11 +48,11 @@ namespace Spark\Db\Sql;
 class From
 {   
     /**
-     * The identifier.
+     * The table identifier.
      *
-     * @var IdentifierInterface
+     * @var string
      */
-    private $table;
+    private $table = '';
     
     /**
      * The alias.
@@ -93,16 +92,6 @@ class From
     }
     
     /**
-     * Returns the table name.
-     *
-     * @return string the table name.
-     */
-    public function getTable()
-    {
-        return $this->table;
-    }
-    
-    /**
      * Set the alias name.
      *
      * @param string $alias the alias.
@@ -119,18 +108,7 @@ class From
 	    }
     
         $this->alias = $alias;
-    }
-    
-    /**
-     * Returns the alias.
-     *
-     * @return string the alias.
-     */
-    public function getAlias()
-    {
-        return $this->alias;
-    }
-    
+    }    
     
     /**
      * Returns a string representation of this expression.
@@ -139,9 +117,9 @@ class From
      */
     public function __toString()
     {
-        $from = sprintf('FROM %s', $this->getTable());
-        if (($alias = $this->getAlias()) !== '') {
-            $from = sprintf('%s %s', $from, $alias);
+        $from = sprintf('FROM %s', $this->table);
+        if ($this->alias !== '') {
+            $from = sprintf('%s %s', $from, $this->alias);
         }
     
         return $from;

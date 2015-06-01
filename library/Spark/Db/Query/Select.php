@@ -42,9 +42,7 @@ namespace Spark\Db\Query;
 use Spark\Db\Driver\Composer\Visitor\HierarchicalVisitorInterface;
 use Spark\Db\Sql\Alias;
 use Spark\Db\Sql\CompositeExpression;
-use Spark\Db\Sql\Expression;
 use Spark\Db\Sql\From;
-use Spark\Db\Sql\Identifier;
 use Spark\Db\Sql\Join;
 use Spark\Db\Sql\Limit;
 use Spark\Db\Sql\Offset;
@@ -102,10 +100,18 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
      *
      * @param string the table name.
      * @param string $alias (optional) the alias for this table, joins however do require an alias.
+     * @throws InvalidArgumentException if the first argument is not a 'string' type.
      */
     public function from($from, $alias = '')
     {
-        $from = new Identifier($from);
+        if (!is_string($from)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($from)) ? get_class($from) : gettype($from)
+            ));
+        }
+    
         if (is_string($alias) && $alias !== '') {
             $from = new Alias($from, $alias);
         }
@@ -185,7 +191,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
             ));
         }
         
-        $this->addQueryPart('select', new Expression($expression));        
+        $this->addQueryPart('select', $expression);        
         return $this; 
     }
     
@@ -282,7 +288,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
     
         $expressions = array();
         foreach ($groups as $group) {
-            $expressions[] = new Identifier($group);
+            $expressions[] = (string) $group;
         }
 
         $this->addQueryPart('groupBy', $expressions);
@@ -347,7 +353,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
      */
     public function addOrderBy($order, $sort = Order::SORT_ASC)
     {
-        $this->addQueryPart('orderBy', new Order(new Identifier($order), $sort));        
+        $this->addQueryPart('orderBy', new Order($order, $sort));        
         return $this; 
     }
 
@@ -411,7 +417,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
         // update state of object.
         $this->setState(self::IS_CLEAN);
         // store generated SQL statement.
-        $this->query = $query;
+        $this->query = rtrim($query);
 
         return $this->query;
     }
@@ -446,7 +452,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
     {        
         $parts = array_pad(array_map('trim', preg_split('/(AS|as)/', $column, 2)), 2, '');
         
-        $identifier = new Identifier($parts[0]);
+        $identifier = (string) $parts[0];
         if (is_string($parts[1]) && $parts[1] !== '') {
             $identifier = new Alias($identifier, $parts[1]);
         }
@@ -470,16 +476,11 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
     /**
      * Creates a composite of expressions
      *
-     * @param array $where a collection containing zero or more expressions.
+     * @param array $expressions a collection containing zero or more expressions.
      * @param int $type the relationship between the one or more where clauses.
      */
-    private function createWhere(array $wheres, $type = CompositeExpression::TYPE_AND)
+    private function createWhere(array $expressions, $type = CompositeExpression::TYPE_AND)
     {        
-        $expressions = array();
-        foreach ($wheres as $where) {
-            $expressions[] = new Expression($where);
-        }
-
         $where = $this->getQueryPart('where');
         if ($where instanceof CompositeExpression) {
             if ($where->getType() === $type) {
@@ -497,16 +498,11 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
     /**
      * Creates a composite of expressions
      *
-     * @param array $havings a collection containing zero or more expressions.
+     * @param array $expressions a collection containing zero or more expressions.
      * @param int $type the relationship between the one or more where clauses.
      */
-    private function createHaving(array $havings, $type = CompositeExpression::TYPE_AND)
-    {        
-        $expressions = array();
-        foreach ($havings as $having) {
-            $expressions[] = new Expression($having);
-        }
-
+    private function createHaving(array $expressions, $type = CompositeExpression::TYPE_AND)
+    {
         $having = $this->getQueryPart('having');
         if ($having instanceof CompositeExpression) {
             if ($having->getType() === $type) {
@@ -595,5 +591,28 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
     public function __toString()
     {
         return $this->getSqlString();
+    }
+    
+    /**
+     * Create a copy of the query builder in it's current state.
+     *
+     * When cloning an object it's pointers will be copied. This means that any changes made to a cloned object will
+     * still be reflected on the original object. So by cloning all objects we ensure that a deep copy is performed.
+     *
+     * @link http://php.net/manual/en/language.oop5.cloning.php
+     */
+    public function __clone()
+    {
+        foreach ($this->parts as $name => $part) {
+            if (is_array($part)) {
+                foreach ($this->parts[$name] as $index => $expression) {
+                    if (is_object($expression)) {
+                        $this->parts[$name][$index] = clone $expression;
+                    }
+                }
+            } else if (is_object($part)) {
+                $this->parts[$name] = clone $part;
+            }
+        }
     }
 }

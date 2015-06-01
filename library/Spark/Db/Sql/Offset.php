@@ -65,7 +65,7 @@ class Offset
      * @throws InvalidArgumentException if the given argument is not a number.
      * @throws LogicException if the given offset is a negative number.
      */
-    public function setOffset($offset)
+    private function setOffset($offset)
     {
         if (!(is_numeric($offset) || $offset === null)) {
             throw new \InvalidArgumentException(sprintf(
@@ -83,16 +83,6 @@ class Offset
         
         $this->offset = (int) $offset;
     }
-    
-    /**
-     * Returns the offset at which to start retrieving results.
-     * 
-     * @return int the offset at which to start retrieving results.
-     */
-    public function getOffset()
-    {
-        return $this->offset;
-    }
 
     /**
      * Returns a string representation of this expression.
@@ -102,8 +92,8 @@ class Offset
     public function __toString()
     {
         $offset = '';
-        if (($value = $this->getOffset()) !== null) {
-            $offset = sprintf('OFFSET %d', $value);
+        if (is_numeric($this->offset)) {
+            $offset = sprintf('OFFSET %d', (int) $this->offset);
         }
         
         return $offset;

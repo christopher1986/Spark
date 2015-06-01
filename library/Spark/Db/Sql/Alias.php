@@ -40,8 +40,7 @@
 namespace Spark\Db\Sql;
 
 /**
- * The As class represents an alias for a SQL identifier. To accomplish that purpose
- * it decorates an object that implements the {@link IdentifierInterface} interface.
+ * The As class represents an alias for a SQL identifier.
  *
  * @author Chris Harris
  * @version 1.0.0
@@ -51,7 +50,7 @@ class Alias
     /**
      * The identifier.
      *
-     * @var IdentifierInterface
+     * @var string
      */
     private $identifier;
     
@@ -68,7 +67,7 @@ class Alias
      * @param string $identifier the identifier for which this alias is created.
      * @paration string $alias the alias.
      */
-    public function __construct(IdentifierInterface $identifier, $alias)
+    public function __construct($identifier, $alias)
     {
         $this->setIdentifier($identifier);
         $this->setAlias($alias);
@@ -77,21 +76,19 @@ class Alias
     /**
      * Set the identifier this alias represents.
      *
-     * @param IdentifierInterface $identifier the identifier this alias represents.
+     * @param string $identifier the identifier this alias represents.
      */
-    public function setIdentifier(IdentifierInterface $identifier)
+    private function setIdentifier($identifier)
     {    
-        $this->identifier = $identifier;
-    }
-    
-    /**
-     * Returns the identifier this alias represents.
-     *
-     * @var IdentifierInterface the identifier.
-     */
-    public function getIdentifier()
-    {
-        return $this->identifier;
+	    if (!is_string($identifier)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($identifier)) ? get_class($identifier) : gettype($identifier)
+            ));
+	    }
+	    
+	    $this->identifier = $identifier;
     }
     
     /**
@@ -100,7 +97,7 @@ class Alias
      * @param string $alias the alias.
      * @throws InvalidArgumentException if the given argument is not a 'string' type.
      */
-    public function setAlias($alias)
+    private function setAlias($alias)
     {
 	    if (!is_string($alias)) {
             throw new \InvalidArgumentException(sprintf(
@@ -114,22 +111,12 @@ class Alias
     }
     
     /**
-     * Returns the alias.
-     *
-     * @return string the alias.
-     */
-    public function getAlias()
-    {
-        return $this->alias;
-    }
-    
-    /**
      * Returns a string representation of this expression.
      *
      * @return string a string representation of this expression.
      */
     public function __toString()
     {
-        return sprintf('%s AS %s', (string) $this->getIdentifier(), $this->getAlias());
+        return sprintf('%s AS %s', $this->identifier, $this->alias);
     }
 }

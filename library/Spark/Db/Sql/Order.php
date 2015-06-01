@@ -56,11 +56,11 @@ class Order
     const SORT_DESC = 'DESC';
 
     /**
-     * The identifier.
+     * The column name of alias.
      *
-     * @var IdentifierInterface
+     * @var string
      */
-    private $identifier;
+    private $column = '';
     
     /**
      * The sorting either ascending or descending.
@@ -72,33 +72,31 @@ class Order
     /**
      * Create a new order.
      *
-     * @param string $identifier the identifier for which this order is created.
+     * @param string $column the column or alias for which this order is created.
      * @param string $sort the sorting either ascending or descending.
      */
-    public function __construct(IdentifierInterface $identifier, $sort = self::SORT_ASC)
+    public function __construct($column, $sort = self::SORT_ASC)
     {
-        $this->setIdentifier($identifier);
+        $this->setColumn($column);
         $this->setSort($sort);
     }
     
     /**
-     * Set the identifier to which this order applies.
+     * Set the column name or alias to which this order applies.
      *
-     * @param IdentifierInterface $identifier the identifier this alias represents.
+     * @param string $column the column name of alias.
      */
-    public function setIdentifier(IdentifierInterface $identifier)
+    private function setColumn($column)
     {    
-        $this->identifier = $identifier;
-    }
-    
-    /**
-     * Returns the identifier to which this order applies.
-     *
-     * @var IdentifierInterface the identifier.
-     */
-    public function getIdentifier()
-    {
-        return $this->identifier;
+	    if (!is_string($column)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a string argument; received "%s"',
+                __METHOD__,
+                (is_object($column)) ? get_class($column) : gettype($column)
+            ));
+	    }
+	    
+	    $this->column = $column;
     }
     
     /**
@@ -122,25 +120,15 @@ class Order
     }
     
     /**
-     * Returns the sorting.
-     *
-     * @return string the sorting.
-     */
-    public function getSort()
-    {
-        return $this->sort;
-    }
-    
-    /**
      * Returns a string representation of this expression.
      *
      * @return string a string representation of this expression.
      */
     public function __toString()
     {
-        $order = (string) $this->getIdentifier();
-        if (($sort = $this->getSort()) !== '') {
-            $order = sprintf('%s %s', $order, $sort);
+        $order = $this->column; 
+        if ($this->sort !== '') {
+            $order = sprintf('%s %s', $order, $this->sort);
         }
         
         return $order;

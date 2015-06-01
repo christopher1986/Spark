@@ -77,6 +77,17 @@ class QueryBuilder implements QueryBuilderInterface
     /**
      * {@inheritDoc}
      */
+    public function rawselect($select)
+    {
+        $statement = new Select($this->adapter);
+        $statement->rawSelect($select);
+        
+        return $statement;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public function setDbAdapter(AdapterInterface $adapter)
     {
         $this->adapter = $adapter;

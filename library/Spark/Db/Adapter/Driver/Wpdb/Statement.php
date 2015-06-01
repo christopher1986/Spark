@@ -98,9 +98,8 @@ class Statement implements StatementInterface, IteratorAggregate
     public function execute(array $params = array())
     {
         $this->preparedQuery = $this->prepareQuery($this->rawQuery, $params);
-        $this->isPrepared = true;
         
-        var_dump($this->preparedQuery);
+        $this->isPrepared = true;
     }
     
     /**
@@ -255,8 +254,9 @@ class Statement implements StatementInterface, IteratorAggregate
         foreach ($params as $name => $param) {
             // corrects formatting errors similar to the wpdb class.
             if ($param->getType() === Parameter::PARAM_STR) {
-                $query = str_replace("'{$name}'", "{$name}", $query);
-                $query = preg_replace("/(?!\")(?<!\"){$name}/", "\"{$name}\"", $query);
+                $query = preg_replace("/['\"]{$name}['\"]/", $name, $query);
+                $query = str_replace($name, "\"{$name}\"", $query);
+                
             }
             
             // escape characters if needed.
