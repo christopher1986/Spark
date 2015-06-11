@@ -111,6 +111,6 @@ class Connection implements ConnectionInterface
         if (function_exists('esc_sql')) {
             return esc_sql($input);
         }
-        return $wpdb->_escape($input);
+        return $this->connection->_escape($input);
     }
 }

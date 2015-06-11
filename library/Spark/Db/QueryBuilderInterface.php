@@ -48,7 +48,7 @@ interface QueryBuilderInterface extends AdapterAwareInterface, AdapterCapableInt
      * Creates a Select statement for the given columns.
      *
      * @param string|array|Traversable $select either a string for a single column or a collection for multiple columns.
-     * @return Select An object to retrieve information from the underlying data source.
+     * @return Select a Select object to retrieve records from the underlying database.
      */
     public function select($select);
     
@@ -56,8 +56,32 @@ interface QueryBuilderInterface extends AdapterAwareInterface, AdapterCapableInt
      * Creates a Select statement using a (raw) vendor-specific expression.
      *
      * @param string $expression a raw expression.
-     * @return Select An object to retrieve information from the underlying data source.
+     * @return Select an object to retrieve records from the underlying database.
      * @throws InvalidArgumentException if the given argument is not a 'string'type.
      */
     public function rawselect($select);
+    
+    /**
+     * Create a Insert statement for the given table name.
+     *
+     * @param string $table the name of a table into which values will be inserted.
+     * @return Insert an Insert object to insert records into the underlying database.
+     */
+    public function insert($table);
+    
+    /**
+     * Create a Delete statement for the given table name.
+     *
+     * @param string $table the name of a table whose records will be deleted.
+     * @return Insert a Delete object to delete records from the underlying database.
+     */
+    public function delete($table);
+    
+    /**
+     * Create a Update statement for the given table name.
+     *
+     * @param string $table the name of a table whose records will be updated.
+     * @return Insert an Update object to update records from the underlying database.
+     */
+    public function update($table);
 }

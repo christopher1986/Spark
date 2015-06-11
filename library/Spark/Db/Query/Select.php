@@ -39,7 +39,6 @@
 
 namespace Spark\Db\Query;
 
-use Spark\Db\Driver\Composer\Visitor\HierarchicalVisitorInterface;
 use Spark\Db\Sql\Alias;
 use Spark\Db\Sql\CompositeExpression;
 use Spark\Db\Sql\From;
@@ -48,42 +47,14 @@ use Spark\Db\Sql\Limit;
 use Spark\Db\Sql\Offset;
 use Spark\Db\Sql\Order;
 
-class Select extends AbstractStatement implements FilterCapableInterface, JoinCapableInterface, OffsetCapableInterface, OrderCapableInterface
+class Select extends AbstractSql implements FilterCapableInterface, JoinCapableInterface, OffsetCapableInterface, LimitCapableInterface, OrderCapableInterface
 {
-    /**
-     * Indicates that nothing has changed.
-     *
-     * @var int
-     */
-    const IS_CLEAN = 0x01;
-    
-    /**
-     * Indicates that the underlying data has changed.
-     * 
-     * @var int
-     */
-    const IS_DIRTY = 0x02;
-
-    /**
-     * The current state.
-     *
-     * @var int
-     */
-    private $state = self::IS_DIRTY;
-
-    /**
-     * A (previously) generated query.
-     *
-     * @var string
-     */
-    private $query = '';
-
     /**
      * The parts that form the select statement.
      *
      * @var array
      */
-    private $parts = array(
+    protected $parts = array(
         'select'  => array(),
         'from'    => null,
         'join'    => array(),
@@ -98,7 +69,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
     /**
      * Specify from which table to retrieve rows.
      *
-     * @param string the table name.
+     * @param string $from the table name.
      * @param string $alias (optional) the alias for this table, joins however do require an alias.
      * @throws InvalidArgumentException if the first argument is not a 'string' type.
      */
@@ -392,7 +363,7 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
             return $this->query;
         }
         
-        $query = sprintf('SELECT %s FROM %s ', $this->listColumns($this->parts['select']), $this->parts['from']);
+        $query = sprintf('SELECT %s FROM %s ', implode(', ', $this->parts['select']), $this->parts['from']);
         if (!empty($this->parts['join'])) {
             $query .= sprintf('%s ', implode(' ', $this->parts['join']));
         }
@@ -400,18 +371,16 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
             $query .= sprintf('WHERE %s ', $this->parts['where']);
         }
         if (!empty($this->parts['groupBy'])) {
-            $query .= sprintf('GROUP BY %s ', $this->listColumns($this->parts['groupBy']));
+            $query .= sprintf('GROUP BY %s ', implode(', ', $this->parts['groupBy']));
         }
         if (($this->parts['having'] instanceof CompositeExpression) && !$this->parts['having']->isEmpty()) {
             $query .= sprintf('HAVING %s ', $this->parts['having']);
         }
         if (!empty($this->parts['orderBy'])) {
-            $query .= sprintf('ORDER BY %s ', $this->listColumns($this->parts['orderBy']));
+            $query .= sprintf('ORDER BY %s ', implode(', ', $this->parts['orderBy']));
         }
-        if (!empty($this->parts['limit']) || !empty($this->parts['offset'])) {
-            $limit = ($this->parts['limit'] instanceof Limit) ? $this->parts['limit']->getLimit() : null;
-            $offset = ($this->parts['offset'] instanceof Offset) ? $this->parts['offset']->getOffset() : null;            
-            $query .= $this->limitResults($limit, $offset);
+        if (!empty($this->parts['limit']) || !empty($this->parts['offset'])) {           
+            $query .= $this->limitResults($this->parts['limit'], $this->parts['offset']);
         }
         
         // update state of object.
@@ -420,26 +389,6 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
         $this->query = rtrim($query);
 
         return $this->query;
-    }
-    
-    /**
-     * Tests whether this object is dirty.
-     *
-     * @return bool true if this object is dirty, false otherwise.
-     */
-    public function isDirty()
-    {
-        return ($this->state === self::IS_DIRTY);    
-    }
-    
-    /**
-     * Tests whether this object is clean.
-     *
-     * @return bool true if this object is clean, false otherwise.
-     */
-    public function isClean()
-    {
-        return ($this->state === self::IS_CLEAN);
     }
     
     /**
@@ -513,106 +462,6 @@ class Select extends AbstractStatement implements FilterCapableInterface, JoinCa
             }
         } else {
             $this->addQueryPart('having', new CompositeExpression($type, $expressions), false);
-        }
-    }
-    
-    /**
-     * Add a new query part with the given name.
-     *
-     * @param string $name the name of the query part.
-     * @param mixed $part the part to add.
-     * @param bool $append (optional) if true will append the part, otherwise all existing parts are first removed.
-     */
-    private function addQueryPart($name, $part, $append = true)
-    {
-        if (!$append) {
-            $this->clearQueryPart($name);
-        }
-
-        if (isset($this->parts[$name])) {
-            $queryParts = $this->parts[$name];
-            if (is_array($queryParts)) {
-                if (!is_array($part)) {
-                    $queryParts[] = $part;
-                } else {   
-                    $queryParts = array_merge($queryParts, $part);
-                }
-            } else {
-                $queryParts = $part;
-            }
-            
-            $this->parts[$name] = $queryParts;
-        } else {
-            $this->parts[$name] = $part;
-        }
-        
-        $this->setState(self::IS_DIRTY);
-    }
-    
-    /**
-     * Returns if present the query part with the give name, otherwise the default value is returned.
-     *
-     * @param string $name the name of the query part to return.
-     * @param mixed $default the value to return if no part exists for the given name.
-     * @return mixed the part associated with the given name, or the default value.
-     */
-    public function getQueryPart($name, $default = array())
-    {
-        return (array_key_exists($name, $this->parts)) ? $this->parts[$name] : $default;
-    }
-    
-    /**
-     * Replaces all parts for the query part with the given name with the initial value.
-     *
-     * @param string $name the name of the query part to remove.
-     * @param mixed $initial the value to reset the empty query part to.
-     */
-    private function clearQueryPart($name, $initial = null)
-    {
-        $this->parts[$name] = $initial;
-        $this->setState(self::IS_DIRTY);
-    }
-    
-    /**
-     * Set the state of this object.
-     *
-     * @param int $state the state.
-     */
-    private function setState($state)
-    {
-        $this->state = $state;
-    }
-    
-    /**
-     * Returns a string representation of this select statement.
-     * 
-     * @return string a string representation of this select statement.
-     */
-    public function __toString()
-    {
-        return $this->getSqlString();
-    }
-    
-    /**
-     * Create a copy of the query builder in it's current state.
-     *
-     * When cloning an object it's pointers will be copied. This means that any changes made to a cloned object will
-     * still be reflected on the original object. So by cloning all objects we ensure that a deep copy is performed.
-     *
-     * @link http://php.net/manual/en/language.oop5.cloning.php
-     */
-    public function __clone()
-    {
-        foreach ($this->parts as $name => $part) {
-            if (is_array($part)) {
-                foreach ($this->parts[$name] as $index => $expression) {
-                    if (is_object($expression)) {
-                        $this->parts[$name][$index] = clone $expression;
-                    }
-                }
-            } else if (is_object($part)) {
-                $this->parts[$name] = clone $part;
-            }
         }
     }
 }

@@ -83,6 +83,16 @@ class Offset
         
         $this->offset = (int) $offset;
     }
+    
+    /**
+     * Returns the offset at which to start retrieving results.
+     *
+     * @return int|null the offset at which to start retrieving results, or null if there is no offset.
+     */
+    public function getOffset()
+    {
+        return $this->offset;
+    }
 
     /**
      * Returns a string representation of this expression.

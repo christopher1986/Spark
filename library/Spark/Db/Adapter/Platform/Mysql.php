@@ -73,16 +73,6 @@ class Mysql implements PlatformInterface
     }
     
     /**
-     * Returns the column separator for this platform.
-     *
-     * @return string the column separator.
-     */
-    public function getColumnSeparator()
-    {
-        return ',';
-    }
-    
-    /**
      * Returns the limit clause for the given arguments.
      *
      * @param int|null $limit (optional)the number of results to retrieve.

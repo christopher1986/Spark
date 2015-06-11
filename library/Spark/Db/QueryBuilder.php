@@ -40,7 +40,10 @@
 namespace Spark\Db;
 
 use Spark\Db\Adapter\AdapterInterface;
+use Spark\Db\Query\Delete;
+use Spark\Db\Query\Insert;
 use Spark\Db\Query\Select;
+use Spark\Db\Query\Update;
 
 class QueryBuilder implements QueryBuilderInterface
 {
@@ -68,10 +71,10 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $selects = (is_array($select)) ? $select : func_get_args();
 
-        $statement = new Select($this->adapter);
-        $statement->select($selects);
+        $stmt = new Select($this->adapter);
+        $stmt->select($selects);
         
-        return $statement;
+        return $stmt;
     }
     
     /**
@@ -79,10 +82,43 @@ class QueryBuilder implements QueryBuilderInterface
      */
     public function rawselect($select)
     {
-        $statement = new Select($this->adapter);
-        $statement->rawSelect($select);
+        $stmt = new Select($this->adapter);
+        $stmt->rawSelect($select);
         
-        return $statement;
+        return $stmt;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function insert($table)
+    {
+        $stmt = new Insert($this->adapter);
+        $stmt->into($table);
+        
+        return $stmt;
+    }
+   
+    /**
+     * {@inheritDoc}
+     */
+    public function delete($table)
+    {
+        $stmt = new Delete($this->adapter);
+        $stmt->from($table);
+        
+        return $stmt;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */    
+    public function update($table)
+    {
+        $stmt = new Update($this->adapter);
+        $stmt->from($table);
+        
+        return $stmt; 
     }
     
     /**

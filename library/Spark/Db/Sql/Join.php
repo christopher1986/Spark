@@ -238,8 +238,8 @@ class Join
         );
     
         $joinType = reset($joinTypes);
-        if (array_key_exists($this->getType(), $joinTypes)) {
-            $joinType = $joinTypes[$this->getType()];
+        if (array_key_exists($this->type, $joinTypes)) {
+            $joinType = $joinTypes[$this->type];
         }
         
         return $joinType;

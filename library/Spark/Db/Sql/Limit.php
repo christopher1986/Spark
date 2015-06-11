@@ -85,6 +85,16 @@ class Limit
     }
     
     /**
+     * Returns the amount of results to retrieve.
+     *
+     * @return int|null the amount of results to retrieve, or null if there is no limit.
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+    
+    /**
      * Returns a string representation of this expression.
      *
      * @return string a string representation of this expression.
