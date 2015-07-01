@@ -42,6 +42,13 @@ namespace Spark\Db\Sql;
 use Countable;
 use IteratorAggregate;
 
+/**
+ * The As class represents an alias for a SQL identifier.
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 interface CompositeInterface extends Countable, IteratorAggregate
 {   
     /**

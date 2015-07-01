@@ -45,6 +45,13 @@ use Spark\Db\Sql\From;
 use Spark\Db\Sql\Limit;
 use Spark\Db\Sql\Order;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.2
+ */
 class Update extends AbstractSql implements FilterCapableInterface, LimitCapableInterface, OrderCapableInterface
 {
     /**
@@ -63,8 +70,14 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     /**
      * Specify from which table to retrieve rows.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u');
+     * </code>
+     *
      * @param string $from the table name.
-     * @param string $alias (optional) the alias for this table, joins however do require an alias.
+     * @param string $alias (optional) the alias for this table.
      * @throws InvalidArgumentException if the first argument is not a 'string' type.
      */
     public function from($from, $alias = '')
@@ -88,6 +101,13 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     /**
      * Add a column and the value to the statement.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->set('name', ':name');
+     * </code>
+     *
      * @param string $column the name of a column.
      * @param mixed $value the value.
      * @return Update allows a fluent interface to be created.
@@ -99,7 +119,19 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
 
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions to this statement and create a 
+     * logical 'AND' relation with any previous restrictions. Replaces any
+     * previously restrictions that were set.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->set('name', :name)
+     *                            ->where('u.is_active = :active');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function where($where)
     {        
@@ -108,7 +140,19 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
 
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions to this statement and create a 
+     * logical 'AND' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->set('name', :name)
+     *                            ->where('u.is_active = :active')
+     *                            ->andWhere('u.date_created = :date');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function andWhere($where)
     {
@@ -119,7 +163,19 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
     
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions to this statement and create a 
+     * logical 'OR' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->set('name', :name)
+     *                            ->where('u.is_active = :active')
+     *                            ->orWhere('u.date_created = :date');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function orWhere($where)
     {
@@ -130,7 +186,17 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies how the results should be ordered. Removes if set any previously ordering.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->orderBy('u.date_created', 'ASC');
+     * </code>
+     *
+     * @param string $column the column to order by.
+     * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
      */
     public function orderBy($order, $sort = Order::SORT_ASC)
     {
@@ -141,7 +207,18 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies additional ordering to be applied on the query results.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->orderBy('u.date_created', 'ASC')
+     *                            ->addOrderBy('u.name', 'ASC');
+     * </code>
+     *
+     * @param string $column the column to order by.
+     * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
      */
     public function addOrderBy($order, $sort = Order::SORT_ASC)
     {
@@ -150,7 +227,17 @@ class Update extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
 
     /**
-     * {@inheritDoc}
+     * Specifies the number of rows to update. Passing a 'null' literal will 
+     * remove any previously set limit.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->limit(5);
+     * </code>
+     *
+     * @param int|null $limit the number of result to return.
      */
     public function limit($limit = null)
     {

@@ -39,6 +39,13 @@
 
 namespace Spark\Db\Query;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 interface JoinCapableInterface
 {
     /**
@@ -46,6 +53,13 @@ interface JoinCapableInterface
      *
      * Because a SQL join is equal to a inner join this method acts as an alias to 
      * the {@link JoinCapableInterface::innerJoin($fromAlias, $join, $alias, $condition)} method.
+     *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->join('u', 'user', 't.user_id = u.id');
+     * </code>
      *
      * @param string $join the table to join with.
      * @param string $alias the alias for the join table.
@@ -56,6 +70,13 @@ interface JoinCapableInterface
     /**
      * Creates and adds a inner join to the query.
      *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->innerJoin('u', 'user', 't.user_id = u.id');
+     * </code>
+     *
      * @param string $join the table to join with.
      * @param string $alias the alias for the join table.
      * @param string $condition the condition for the join.
@@ -65,6 +86,13 @@ interface JoinCapableInterface
     /**
      * Creates and adds a left join to the query.
      *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->leftJoin('u', 'user', 't.user_id = u.id');
+     * </code>
+     *
      * @param string $join the table to join with.
      * @param string $alias the alias for the join table.
      * @param string $condition the condition for the join.
@@ -73,6 +101,13 @@ interface JoinCapableInterface
     
     /**
      * Creates and adds a right join to the query.
+     *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->rightJoin('u', 'user', 't.user_id = u.id');
+     * </code>
      *
      * @param string $join the table to join with.
      * @param string $alias the alias for the join table.

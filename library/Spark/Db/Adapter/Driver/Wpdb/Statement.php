@@ -42,6 +42,13 @@ namespace Spark\Db\Adapter\Driver\Wpdb;
 use Spark\Db\Adapter\Driver\StatementInterface;
 use IteratorAggregate;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 class Statement implements StatementInterface, IteratorAggregate
 {    
     /**
@@ -78,6 +85,13 @@ class Statement implements StatementInterface, IteratorAggregate
      * @var boolean
      */
     private $isPrepared = false;
+    
+    /**
+     * A flag that indicates if this query produces a result set.
+     *
+     * @var boolean
+     */
+    private $hasResultSet = false;
 
     /**
      * Create a new connection.
@@ -99,6 +113,15 @@ class Statement implements StatementInterface, IteratorAggregate
     {
         $this->preparedQuery = $this->prepareQuery($this->rawQuery, $params);
         $this->isPrepared = true;
+        
+        if (preg_match('/^\s*(select)/i', $this->preparedQuery)) {
+            $this->hasResultSet = true;
+        }
+
+        // execute prepared query.
+        $result = $this->connection->getResource()->query($this->preparedQuery);
+        
+        return ($result !== false);
     }
     
     /**
@@ -109,6 +132,7 @@ class Statement implements StatementInterface, IteratorAggregate
         $results = array();
         if ($this->isPrepared) {
             $results = $this->connection->getResource()->get_row($this->preparedQuery, $type, $rowOffset);
+            ++$this->numQueries;
         }
             
         return $results;
@@ -144,7 +168,10 @@ class Statement implements StatementInterface, IteratorAggregate
      * {@inheritDoc}
      */
     public function rowCount()
-    {
+    {        
+        if ($this->hasResultSet) {
+            return $this->connection->getResource()->num_rows;
+        }
         return $this->connection->getResource()->rows_affected;
     }
     

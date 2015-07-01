@@ -39,12 +39,27 @@
 
 namespace Spark\Db\Query;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 interface FilterCapableInterface
 {
     /**
      * Add one or more restrictions for the returned results, and creates a 
      * logical 'AND' relation with any previous restrictions. Replaces any
      * previously restrictions that were set.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->andWhere('u.name = :name');
+     * </code>
      *
      * @param string|array $where one or more restrictions.
      */
@@ -54,6 +69,15 @@ interface FilterCapableInterface
      * Add one or more restrictions for the returned results, and creates a 
      * logical 'AND' relation with any previous restrictions.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->where('u.is_active = :active')
+     *                            ->andWhere('u.name = :name');
+     * </code>
+     *
      * @param string|array $where one or more restrictions.
      */
     public function andWhere($where);
@@ -61,6 +85,14 @@ interface FilterCapableInterface
     /**
      * Add one or more restrictions for the returned results, and creates a 
      * logical 'OR' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->orWhere('u.name = :name');
+     * </code>
      *
      * @param string|array $where one or more restrictions.
      */

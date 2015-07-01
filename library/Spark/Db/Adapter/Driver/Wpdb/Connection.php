@@ -42,6 +42,13 @@ namespace Spark\Db\Adapter\Driver\Wpdb;
 use Spark\Db\QueryBuilder;
 use Spark\Db\Adapter\Driver\ConnectionInterface;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 class Connection implements ConnectionInterface
 {
     /**

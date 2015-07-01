@@ -42,46 +42,117 @@ namespace Spark\Db;
 use Spark\Db\Adapter\AdapterAwareInterface;
 use Spark\Db\Adapter\AdapterCapableInterface;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 interface QueryBuilderInterface extends AdapterAwareInterface, AdapterCapableInterface
 {
     /**
-     * Creates a Select statement for the given columns.
+     * Create a Select statement for the given columns.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->where('u.is_active = :active')
+     *                            ->andWhere('u.name = :name');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->bindParam(':active', 1, StatementInterface::PARAM_INT);
+     *    $stmt->bindParam(':name', 'John', StatementInterface::PARAM_STR);
+     *    
+     *    $results = $stmt->fetchAll();
+     *
+     * </code>
      *
      * @param string|array|Traversable $select either a string for a single column or a collection for multiple columns.
      * @return Select a Select object to retrieve records from the underlying database.
+     * @see Select
      */
     public function select($select);
     
     /**
-     * Creates a Select statement using a (raw) vendor-specific expression.
+     * Create a Select statement using a (raw) vendor-specific expression.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->rawSelect('CASE WHEN u.id IN (1, 3, 5, 7) THEN t.date_created ELSE t.last_modified END AS date');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $column = $stmt->fetchColumn();
+     * </code>
      *
      * @param string $expression a raw expression.
-     * @return Select an object to retrieve records from the underlying database.
-     * @throws InvalidArgumentException if the given argument is not a 'string'type.
+     * @return Select a Select object to retrieve records from the underlying database.
+     * @see Select
      */
     public function rawselect($select);
     
     /**
-     * Create a Insert statement for the given table name.
+     * Create an Insert statement for the given table name.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->insert('users')
+     *                            ->values(array('name' => :name, 'username' => :username));
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->execute(array(':name' => 'John', ':username' => 'john'));
+     * </code>
      *
      * @param string $table the name of a table into which values will be inserted.
      * @return Insert an Insert object to insert records into the underlying database.
+     * @see Insert
      */
     public function insert($table);
     
     /**
      * Create a Delete statement for the given table name.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->where('u.name = :name');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->execute(array(':name' => 'john'));
+     * </code>
+     *
      * @param string $table the name of a table whose records will be deleted.
-     * @return Insert a Delete object to delete records from the underlying database.
+     * @param string $alias (optional) the alias for this table.
+     * @return Delete a Delete object to delete records from the underlying database.
+     * @see Delete
      */
-    public function delete($table);
+    public function delete($table, $alias = '');
     
     /**
-     * Create a Update statement for the given table name.
+     * Create an Update statement for the given table name.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->set('name', ':name')
+     *                            ->where('u.is_active = :active');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->bindParam(':name', 'John', StatementInterface::PARAM_STR);
+     *    $stmt->bindParam(':active', 1, StatementInterface::PARAM_INT);
+     *    $stmt->execute();
+     * </code>
      *
      * @param string $table the name of a table whose records will be updated.
-     * @return Insert an Update object to update records from the underlying database.
-     */
-    public function update($table);
+     * @param string $alias (optional) the alias for this table.
+     * @return Update an Update object to update records from the underlying database.
+     * @see Update
+     */ 
+    public function update($table, $alias = '');
 }

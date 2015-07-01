@@ -45,6 +45,13 @@ use Spark\Db\Sql\From;
 use Spark\Db\Sql\Limit;
 use Spark\Db\Sql\Order;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.2
+ */
 class Delete extends AbstractSql implements FilterCapableInterface, LimitCapableInterface, OrderCapableInterface
 {
     /**
@@ -62,8 +69,14 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     /**
      * Specify from which table to retrieve rows.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u');
+     * </code>
+     *
      * @param string $from the table name.
-     * @param string $alias (optional) the alias for this table, joins however do require an alias.
+     * @param string $alias (optional) the alias for this table.
      * @throws InvalidArgumentException if the first argument is not a 'string' type.
      */
     public function from($from, $alias = '')
@@ -85,7 +98,18 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
 
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions to this statement and create a 
+     * logical 'AND' relation with any previous restrictions. Replaces any
+     * previously restrictions that were set.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->where('u.is_active = :active');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function where($where)
     {        
@@ -94,7 +118,18 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
 
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions to this statement and create a 
+     * logical 'AND' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->where('u.is_active = :active')
+     *                            ->andWhere('u.name = :name');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function andWhere($where)
     {
@@ -105,7 +140,18 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
     
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions to this statement and create a 
+     * logical 'OR' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->where('u.is_active = :active')
+     *                            ->orWhere('u.name = :name');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function orWhere($where)
     {
@@ -116,7 +162,17 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies how the results should be ordered. Removes if set any previously ordering.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->orderBy('u.date_created', 'ASC');
+     * </code>
+     *
+     * @param string $column the column to order by.
+     * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
      */
     public function orderBy($order, $sort = Order::SORT_ASC)
     {
@@ -127,7 +183,18 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies additional ordering to be applied on the query results.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->orderBy('u.date_created', 'ASC')
+     *                            ->addOrderBy('u.name', 'ASC');
+     * </code>
+     *
+     * @param string $column the column to order by.
+     * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
      */
     public function addOrderBy($order, $sort = Order::SORT_ASC)
     {
@@ -136,7 +203,17 @@ class Delete extends AbstractSql implements FilterCapableInterface, LimitCapable
     }
 
     /**
-     * {@inheritDoc}
+     * Specifies the number of rows to delete. Passing a 'null' literal will 
+     * remove any previously set limit.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->limit(5);
+     * </code>
+     *
+     * @param int|null $limit the number of result to return.
      */
     public function limit($limit = null)
     {

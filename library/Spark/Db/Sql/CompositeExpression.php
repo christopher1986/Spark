@@ -41,6 +41,13 @@ namespace Spark\Db\Sql;
 
 use ArrayIterator;
 
+/**
+ * The As class represents an alias for a SQL identifier.
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 class CompositeExpression implements CompositeInterface
 {   
     /**

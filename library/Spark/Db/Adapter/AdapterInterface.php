@@ -39,6 +39,13 @@
 
 namespace Spark\Db\Adapter;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 interface AdapterInterface
 {
     /**
@@ -48,6 +55,13 @@ interface AdapterInterface
      * @link http://php.net/manual/en/mysqli.overview.php
      */
     public function getDriver();
+    
+    /**
+     * Returns a connection for a specific database server.
+     *
+     * @return ConnectionInterface a database connection.
+     */
+    public function getConnection();
     
     /**
      * Returns a {@link QueryBuilder} for this connection.

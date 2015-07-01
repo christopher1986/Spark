@@ -42,6 +42,13 @@ namespace Spark\Db\Adapter;
 use Spark\Db\QueryBuilder;
 use Spark\Db\Adapter\Driver\DriverInterface;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 class Adapter implements AdapterInterface
 {
     /**
@@ -74,6 +81,14 @@ class Adapter implements AdapterInterface
     public function getDriver()
     {
         return $this->driver;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function getConnection()
+    {
+        return $this->driver->getConnection();
     }
     
     /**

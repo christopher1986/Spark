@@ -39,6 +39,13 @@
 
 namespace Spark\Db\Adapter;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 interface AdapterCapableInterface
 {
     /**

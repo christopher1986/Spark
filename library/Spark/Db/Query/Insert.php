@@ -39,6 +39,13 @@
 
 namespace Spark\Db\Query;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.2
+ */
 class Insert extends AbstractSql
 {
     /**
@@ -54,7 +61,14 @@ class Insert extends AbstractSql
     /**
      * Specify which table into which new rows will be inserted.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->insert('users');
+     * </code>
+     *
      * @param string $table the table name.
+     * @param string $alias (optional) the alias for this table.
      * @return Insert allows a fluent interface to be created.
      * @throws InvalidArgumentException if the first argument is not a 'string' type.
      */
@@ -73,10 +87,16 @@ class Insert extends AbstractSql
     }
     
     /**
-     * Add one or more columns and values to the statement.
+     * Add one or more columns and values to the statement. The specified collection should consist 
+     * of key-value pairs where a key represents the column name and the value will be inserted into 
+     * that column.
      *
-     * The collection should consist of key-value pairs where a key represents the column name
-     * and the value will be inserted into that column.
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->insert('users')
+     *                            ->values(array('name' => ':name', 'username' => ':username', 'password' => ':password'));
+     * </code>
      *
      * @param array $values a collection consisting of key-value pairs.
      * @return Insert allows a fluent interface to be created.
@@ -89,6 +109,15 @@ class Insert extends AbstractSql
     
     /**
      * Add a column and value to the statement.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->insert('users')
+     *                            ->value('name', ':name')
+     *                            ->value('username', ':username')
+     *                            ->value('password', ':password');
+     * </code>
      *
      * @param string $column the name of a column.
      * @param mixed $value the value.

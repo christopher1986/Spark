@@ -47,6 +47,13 @@ use Spark\Db\Sql\Limit;
 use Spark\Db\Sql\Offset;
 use Spark\Db\Sql\Order;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 class Select extends AbstractSql implements FilterCapableInterface, JoinCapableInterface, OffsetCapableInterface, LimitCapableInterface, OrderCapableInterface
 {
     /**
@@ -68,6 +75,13 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     
     /**
      * Specify from which table to retrieve rows.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('*')
+     *                            ->from('users', 'u');
+     * </code>
      *
      * @param string $from the table name.
      * @param string $alias (optional) the alias for this table, joins however do require an alias.
@@ -95,6 +109,13 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      * Specify which columns to retrieve. All previously set select statement(s) will be removed, 
      * use the {@link Select::addSelect($select)} method to add additional statements instead.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select(array('u.id, 'u.name AS full_name'))
+     *                            ->from('users', 'u');
+     * </code>
+     *
      * @param string|array|Traversable $select either a string for a single column or a collection for multiple columns.
      */
     public function select($select)
@@ -109,6 +130,14 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     
     /**
      * Specify which columns to retrieve.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->add(array('u.id, 'u.name'))
+     *                            ->addSelect(u.last_modified)
+     *                            ->from('users', 'u');
+     * </code>
      *
      * @param string|array|Traversable $select either a string for a single column or a collection for multiple columns.
      */
@@ -131,6 +160,13 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      * columns this method only supports a single expression, you can however call this method numerous
      * times until all expressions have been added.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->rawSelect('CASE WHEN u.id IN (1, 3, 5, 7) THEN u.date_created ELSE u.last_modified END AS date')
+     *                            ->from('users', 'u');
+     * </code>
+     *
      * @param string $expression a raw expression.
      * @throws InvalidArgumentException if the given argument is not a 'string'type.
      */
@@ -148,6 +184,14 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      * Unlike the {@link Select::addSelect($select)} method which allows you to pass a collection of
      * columns this method only supports a single expression, you can however call this method numerous
      * times until all vendor-specific expressions have been added.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.id')
+     *                            ->addRawSelect('CASE WHEN u.id IN (1, 3, 5, 7) THEN u.date_created ELSE u.last_modified END AS date')
+     *                            ->from('users', 'u');
+     * </code>
      *
      * @param string $expression a raw expression.
      * @throws InvalidArgumentException if the given argument is not a 'string'type.
@@ -167,7 +211,22 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritdoc}
+     * Creates and adds a join to the query. 
+     *
+     * Because a SQL join is equal to a inner join this method acts as an alias to 
+     * the {@link JoinCapableInterface::innerJoin($fromAlias, $join, $alias, $condition)} method.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->join('m', 'user_meta', 'm.user_id = u.id');
+     * </code>
+     *
+     * @param string $join the table to join with.
+     * @param string $alias the alias for the join table.
+     * @param string $condition the condition for the join.
      */
     public function join($join, $alias, $condition)
     {
@@ -176,7 +235,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritdoc}
+     * Creates and adds an inner join to the query.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->innerJoin('m', 'user_meta', 'm.user_id = u.id');
+     * </code>
+     *
+     * @param string $join the table to join with.
+     * @param string $alias the alias for the join table.
+     * @param string $condition the condition for the join.
      */
     public function innerJoin($join, $alias, $condition)
     {
@@ -185,7 +256,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
 
     /**
-     * {@inheritdoc}
+     * Creates and adds a left join to the query.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->leftJoin('m', 'user_meta', 'm.user_id = u.id');
+     * </code>
+     *
+     * @param string $join the table to join with.
+     * @param string $alias the alias for the join table.
+     * @param string $condition the condition for the join.
      */
     public function leftJoin($join, $alias, $condition)
     {
@@ -194,7 +277,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritdoc}
+     * Creates and adds a right join to the query.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->rightJoin('m', 'user_meta', 'm.user_id = u.id');
+     * </code>
+     *
+     * @param string $join the table to join with.
+     * @param string $alias the alias for the join table.
+     * @param string $condition the condition for the join.
      */
     public function rightJoin($join, $alias, $condition)
     {
@@ -203,7 +298,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
 
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions for the returned results, and creates a 
+     * logical 'AND' relation with any previous restrictions. Replaces any
+     * previously restrictions that were set.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->where('u.name = :name');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function where($where)
     {        
@@ -212,7 +319,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
 
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions for the returned results, and creates a 
+     * logical 'AND' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->where('u.is_active = :active')
+     *                            ->andWhere('u.name = :name');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function andWhere($where)
     {
@@ -223,7 +342,18 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritdoc}
+     * Add one or more restrictions for the returned results, and creates a 
+     * logical 'OR' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->orWhere('u.name = :name');
+     * </code>
+     *
+     * @param string|array $where one or more restrictions.
      */
     public function orWhere($where)
     {
@@ -235,6 +365,14 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
 
     /**
      * Specifies a grouping over the results of the query.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('p.sku, p.product_name')
+     *                            ->from('product', 'p')
+     *                            ->groupBy('p.product_name');
+     * </code>
      *
      * @param string|array $groups one or more columns to group by.
      */
@@ -250,6 +388,15 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     
     /**
      * Add additional grouping over the results of the query.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('p.sku, p.product_name')
+     *                            ->from('product', 'p')
+     *                            ->groupBy('p.product_name')
+     *                            ->andGroupBy('p.quantity');
+     * </code>
      *
      * @param string|array $groups one or more columns to group by.
      */
@@ -272,6 +419,16 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      * logical 'AND' relation with any previous restrictions. Replace any previously restrictions
      * that were set.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('p.sku, p.product_name')
+     *                            ->addRawSelect('SUM(p.quantity) AS p.total')
+     *                            ->from('product', 'p')
+     *                            ->groupBy('p.product_name')
+     *                            ->having('p.total > 10');
+     * </code>
+     *
      * @param string|array $having one or more restrictions.
      */
     public function having($having)
@@ -283,6 +440,18 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     /**
      * Add one or more restrictions over the grouping of the returned results, and creates a 
      * logical 'AND' relation with any previous restrictions.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('p.sku, p.product_name')
+     *                            ->addRawSelect('SUM(p.quantity) AS p.total')
+     *                            ->addRawSelect('MAX(p.price) AS p.highest_price')
+     *                            ->from('product', 'p')
+     *                            ->groupBy('p.product_name')
+     *                            ->having('p.total > 10')
+     *                            ->andHaving('p.highest_price > 10000);
+     * </code>
      *
      * @param string|array $having one or more restrictions.
      */
@@ -298,6 +467,18 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      * Add one or more restrictions over the grouping of the returned results, and creates a 
      * logical 'OR' relation with any previous restrictions.
      *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('p.sku, p.product_name')
+     *                            ->addRawSelect('SUM(p.quantity) AS p.total')
+     *                            ->addRawSelect('MAX(p.price) AS p.highest_price')
+     *                            ->from('product', 'p')
+     *                            ->groupBy('p.product_name')
+     *                            ->having('p.total > 10')
+     *                            ->orHaving('p.highest_price > 10000);
+     * </code>
+     *
      * @param string|array $having one or more restrictions.
      */
     public function orHaving($having)
@@ -309,7 +490,18 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies how the results should be ordered. Removes if set any previously ordering.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->orderBy('u.date_created', 'ASC');
+     * </code>
+     *
+     * @param string $column the column to order by.
+     * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
      */
     public function orderBy($order, $sort = Order::SORT_ASC)
     {
@@ -320,7 +512,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies additional ordering to be applied on the query results.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->orderBy('u.date_created', 'ASC')
+     *                            ->addOrderBy('u.name', 'ASC');
+     * </code>
+     *
+     * @param string $column the column to order by.
+     * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
      */
     public function addOrderBy($order, $sort = Order::SORT_ASC)
     {
@@ -329,7 +533,18 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
 
     /**
-     * {@inheritDoc}
+     * Specifies the amount of results to return. Passing a 'null' literal will 
+     * remove any previously set limit.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->limit(5);
+     * </code>
+     *
+     * @param int|null $limit the number of result to return.
      */
     public function limit($limit = null)
     {
@@ -342,7 +557,19 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
     
     /**
-     * {@inheritDoc}
+     * Specifies the offset of the results to return. Passing a 'null' literal will remove any previously 
+     * set offset. Using this method in conjunction with the {@link OrderCapableInterface::limit($limit)} 
+     * method allows pagination to be applied on the results.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->offset(2);
+     * </code>
+     *
+     * @param int|null $offset the offset at which the returning results will start.
      */
     public function offset($offset = null)
     {
@@ -423,7 +650,7 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     }
      
     /**
-     * Creates a composite of expressions
+     * Creates a composite of expressions.
      *
      * @param array $expressions a collection containing zero or more expressions.
      * @param int $type the relationship between the one or more where clauses.
@@ -445,7 +672,7 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
     
      
     /**
-     * Creates a composite of expressions
+     * Creates a composite of expressions.
      *
      * @param array $expressions a collection containing zero or more expressions.
      * @param int $type the relationship between the one or more where clauses.

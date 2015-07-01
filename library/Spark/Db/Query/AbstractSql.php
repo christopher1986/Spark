@@ -45,6 +45,13 @@ use Spark\Db\Adapter\AdapterInterface;
 use Spark\Db\Sql\Limit;
 use Spark\Db\Sql\Offset;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 abstract class AbstractSql implements AdapterAwareInterface, AdapterCapableInterface
 {
     /**

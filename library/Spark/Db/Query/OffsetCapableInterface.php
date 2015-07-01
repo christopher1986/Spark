@@ -39,14 +39,26 @@
 
 namespace Spark\Db\Query;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 interface OffsetCapableInterface
 {
     /**
-     * Specifies the offset of the results to return. Passing a 'null' literal will 
-     * remove any previously set offset. 
-     *
-     * Using this method in conjunction with the {@link OrderCapableInterface::limit($limit)} 
+     * Specifies the offset of the results to return. Passing a 'null' literal will remove any previously 
+     * set offset. Using this method in conjunction with the {@link OrderCapableInterface::limit($limit)} 
      * method allows pagination to be applied on the results.
+     *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->offset(2);
+     * </code>
      *
      * @param int|null $offset the offset at which the returning results will start.
      */

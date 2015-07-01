@@ -39,6 +39,13 @@
 
 namespace Spark\Db\Adapter\Driver\Wpdb;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 0.0.1
+ */
 interface ParameterInterface
 {  
     /**

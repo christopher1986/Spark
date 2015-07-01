@@ -39,10 +39,24 @@
 
 namespace Spark\Db\Query;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 interface OrderCapableInterface
 {
     /**
      * Specifies how the results should be ordered. Removes if set any previously ordering.
+     *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->orderBy('t.date', 'ASC');
+     * </code>
      *
      * @param string $column the column to order by.
      * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.
@@ -51,6 +65,14 @@ interface OrderCapableInterface
     
     /**
      * Specifies additional ordering to be applied on the query results.
+     *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->orderBy('t.date', 'ASC')
+     *                            ->addOrderBy('t.user_id', 'ASC');
+     * </code>
      *
      * @param string $column the column to order by.
      * @param string $sort how to sort the results, only 'ASC' and 'DESC' are allowed.

@@ -45,6 +45,13 @@ use Spark\Db\Query\Insert;
 use Spark\Db\Query\Select;
 use Spark\Db\Query\Update;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 class QueryBuilder implements QueryBuilderInterface
 {
     /**
@@ -65,7 +72,28 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Create a Select statement for the given columns.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->select('u.name')
+     *                            ->from('users', 'u')
+     *                            ->where('u.is_active = :active')
+     *                            ->andWhere('u.name = :name');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->bindParam(':active', 1, StatementInterface::PARAM_INT);
+     *    $stmt->bindParam(':name', 'John', StatementInterface::PARAM_STR);
+     *    
+     *    $results = $stmt->fetchAll();
+     *
+     * </code>
+     *
+     * @param string|array|Traversable $select either a string for a single column or a collection for multiple columns.
+     * @return Select a Select object to retrieve records from the underlying database.
+     * @see Select
+     * @see StatementInterface
      */
     public function select($select)
     {
@@ -78,7 +106,21 @@ class QueryBuilder implements QueryBuilderInterface
     }
     
     /**
-     * {@inheritDoc}
+     * Create a Select statement using a (raw) vendor-specific expression.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->rawSelect('CASE WHEN u.id IN (1, 3, 5, 7) THEN t.date_created ELSE t.last_modified END AS date');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $column = $stmt->fetchColumn();
+     * </code>
+     *
+     * @param string $expression a raw expression.
+     * @return Select a Select object to retrieve records from the underlying database.
+     * @see Select
+     * @see StatementInterface
      */
     public function rawselect($select)
     {
@@ -89,34 +131,84 @@ class QueryBuilder implements QueryBuilderInterface
     }
     
     /**
-     * {@inheritDoc}
+     * Create an Insert statement for the given table name.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->insert('users')
+     *                            ->values(array('name' => :name, 'username' => :username));
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->execute(array(':name' => 'John', ':username' => 'john'));
+     * </code>
+     *
+     * @param string $table the name of a table into which values will be inserted.
+     * @return Insert an Insert object to insert records into the underlying database.
+     * @see Insert
+     * @see StatementInterface
      */
-    public function insert($table)
+    public function insert($table, $alias = '')
     {
         $stmt = new Insert($this->adapter);
-        $stmt->into($table);
+        $stmt->into($table, $alias);
         
         return $stmt;
     }
    
     /**
-     * {@inheritDoc}
+     * Create a Delete statement for the given table name.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->delete('users', 'u')
+     *                            ->where('u.name = :name');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->execute(array(':name' => 'john'));
+     * </code>
+     *
+     * @param string $table the name of a table whose records will be deleted.
+     * @param string $alias (optional) the alias for this table.
+     * @return Delete a Delete object to delete records from the underlying database.
+     * @see Delete
+     * @see StatementInterface
      */
-    public function delete($table)
+    public function delete($table, $alias = '')
     {
         $stmt = new Delete($this->adapter);
-        $stmt->from($table);
+        $stmt->from($table, $alias);
         
         return $stmt;
     }
     
     /**
-     * {@inheritDoc}
-     */    
-    public function update($table)
+     * Create an Update statement for the given table name.
+     *
+     * <code>
+     *    $adapter = new Adapter(array('driver' => 'wpdb'));
+     *    $queryBuilder = $adapter->getQueryBuilder()
+     *                            ->update('users', 'u')
+     *                            ->set('name', ':name')
+     *                            ->where('u.is_active = :active');
+     *
+     *    $stmt = $queryBuilder->prepare();
+     *    $stmt->bindParam(':name', 'John', StatementInterface::PARAM_STR);
+     *    $stmt->bindParam(':active', 1, StatementInterface::PARAM_INT);
+     *    $stmt->execute();
+     * </code>
+     *
+     * @param string $table the name of a table whose records will be updated.
+     * @param string $alias (optional) the alias for this table.
+     * @return Update an Update object to update records from the underlying database.
+     * @see Update
+     * @see ConnectionInterface
+     */  
+    public function update($table, $alias = '')
     {
         $stmt = new Update($this->adapter);
-        $stmt->from($table);
+        $stmt->from($table, $alias);
         
         return $stmt; 
     }

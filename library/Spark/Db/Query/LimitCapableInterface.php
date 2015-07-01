@@ -39,11 +39,25 @@
 
 namespace Spark\Db\Query;
 
+/**
+ *
+ *
+ * @author Chris Harris
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 interface LimitCapableInterface
 {
     /**
      * Specifies the amount of results to return. Passing a 'null' literal will 
      * remove any previously set limit.
+     *
+     * <code>
+     *    $queryBuilder = $adapter->getQueryBuilder();
+     *                            ->select('t.name')
+     *                            ->from('table', 't')
+     *                            ->limit(5);
+     * </code>
      *
      * @param int|null $limit the number of result to return.
      */
