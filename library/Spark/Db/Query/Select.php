@@ -221,7 +221,7 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      *    $queryBuilder = $adapter->getQueryBuilder()
      *                            ->select('u.name')
      *                            ->from('users', 'u')
-     *                            ->join('m', 'user_meta', 'm.user_id = u.id');
+     *                            ->join('user_meta', 'm', 'm.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
@@ -242,7 +242,7 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      *    $queryBuilder = $adapter->getQueryBuilder()
      *                            ->select('u.name')
      *                            ->from('users', 'u')
-     *                            ->innerJoin('m', 'user_meta', 'm.user_id = u.id');
+     *                            ->innerJoin('user_meta', 'm', 'm.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
@@ -263,7 +263,7 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      *    $queryBuilder = $adapter->getQueryBuilder()
      *                            ->select('u.name')
      *                            ->from('users', 'u')
-     *                            ->leftJoin('m', 'user_meta', 'm.user_id = u.id');
+     *                            ->leftJoin('user_meta', 'm', 'm.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
@@ -284,7 +284,7 @@ class Select extends AbstractSql implements FilterCapableInterface, JoinCapableI
      *    $queryBuilder = $adapter->getQueryBuilder()
      *                            ->select('u.name')
      *                            ->from('users', 'u')
-     *                            ->rightJoin('m', 'user_meta', 'm.user_id = u.id');
+     *                            ->rightJoin('user_meta', 'm', 'm.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.

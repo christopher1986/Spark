@@ -58,7 +58,7 @@ interface JoinCapableInterface
      *    $queryBuilder = $adapter->getQueryBuilder();
      *                            ->select('t.name')
      *                            ->from('table', 't')
-     *                            ->join('u', 'user', 't.user_id = u.id');
+     *                            ->join('user', 'u', 't.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
@@ -74,7 +74,7 @@ interface JoinCapableInterface
      *    $queryBuilder = $adapter->getQueryBuilder();
      *                            ->select('t.name')
      *                            ->from('table', 't')
-     *                            ->innerJoin('u', 'user', 't.user_id = u.id');
+     *                            ->innerJoin('user', 'u', 't.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
@@ -90,7 +90,7 @@ interface JoinCapableInterface
      *    $queryBuilder = $adapter->getQueryBuilder();
      *                            ->select('t.name')
      *                            ->from('table', 't')
-     *                            ->leftJoin('u', 'user', 't.user_id = u.id');
+     *                            ->leftJoin('user', 'u', 't.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
@@ -106,7 +106,7 @@ interface JoinCapableInterface
      *    $queryBuilder = $adapter->getQueryBuilder();
      *                            ->select('t.name')
      *                            ->from('table', 't')
-     *                            ->rightJoin('u', 'user', 't.user_id = u.id');
+     *                            ->rightJoin('user', 'u', 't.user_id = u.id');
      * </code>
      *
      * @param string $join the table to join with.
