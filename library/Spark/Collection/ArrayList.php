@@ -348,6 +348,21 @@ class ArrayList extends AbstractList
     /**
      * {@inheritDoc}
      */
+    public function filter($predicate)
+    {
+        $elements = array();
+        foreach ($this as $element) {
+            if ($predicate($element)) {
+                $elements[] = $element;
+            }
+        }
+        
+        return new self($elements);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public function toArray()
     {
         return $this->items;

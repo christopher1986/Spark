@@ -116,4 +116,12 @@ interface ListInterface extends CollectionInterface
      * @throws \LogicException if $toIndex is larger than the number of elements contained by this list;
      */
     public function subList($fromIndex, $toIndex);
+    
+    /**
+     * Returns a new list with elements that match the specified predicate.
+     *
+     * @param callable $predicate the predicate to determine which elements should be included.
+     * @return ListInterface a new list with elements that matches the predicate.
+     */
+    public function filter($predicate);
 }
