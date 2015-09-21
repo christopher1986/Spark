@@ -310,13 +310,16 @@ class Request implements RequestInterface
     /**
      * Returns a member from the $_GET superglobal.
      *
-     * @param string $key the name of the member.
-     * @param mixed $default the default value if the
-     *                       key does not exist.
+     * @param string $key (optional) the name of the member.
+     * @param mixed $default (optional) the default value if the key does not exist.
      * @return mixed the value associated with the key.
      */
-    public function getQuery($key, $default = null)
+    public function getQuery($key = null, $default = null)
     {
+        if (is_null($key)) {
+            return $_GET;
+        }
+    
         return (isset($_GET[$key])) ? $_GET[$key] : $default;
     }
 
@@ -355,9 +358,8 @@ class Request implements RequestInterface
     /**
      * Returns a member of the $_POST superglobal.
      *
-     * @param string $key the name of the member.
-     * @param mixed $default the default value if the
-     *                       key does not exist.
+     * @param string $key (optional) the name of the member.
+     * @param mixed $default (optional) the default value if the key does not exist.
      * @return mixed the value associated with the key.
      */
     public function getPost($key = null, $default = null)
@@ -372,9 +374,8 @@ class Request implements RequestInterface
     /**
      * Returns a member of the $_COOKIE superglobal.
      *
-     * @param string $key the name of the member.
-     * @param mixed $default the default value if the
-     *                       key does not exist.
+     * @param string $key (optional) the name of the member.
+     * @param mixed $default (optional) the default value if the key does not exist.
      * @return mixed the value associated with the key.
      */
     public function getCookie($key = null, $defaults = null)
@@ -389,9 +390,8 @@ class Request implements RequestInterface
     /**
      * Returns a member of the $_SERVER superglobal.
      *
-     * @param string $key the name of the member.
-     * @param mixed $default the default value if the
-     *                       key does not exist.
+     * @param string $key (optional) the name of the member.
+     * @param mixed $default (optional) the default value if the key does not exist.
      * @return mixed the value associated with the key.
      */
     public function getServer($key = null, $default = null) 
@@ -416,8 +416,7 @@ class Request implements RequestInterface
     /**
      * Returns true if a POST request was made, false otherwise.
      *
-     * @return bool returns true if this is a POST request,
-     *              false otherwise.
+     * @return bool returns true if this is a POST request, false otherwise.
      */
     public function isPost()
     {
@@ -427,8 +426,7 @@ class Request implements RequestInterface
     /**
      * Returns true if a GET request was made, false otherwise.
      *
-     * @return bool returns true if this is a GET request,
-     *              false otherwise.
+     * @return bool returns true if this is a GET request, false otherwise.
      */
     public function isGet()
     {
@@ -438,8 +436,7 @@ class Request implements RequestInterface
     /**
      * Returns true if a PUT request was made, false otherwise.
      *
-     * @return bool returns true if this is a PUT request,
-     *              false otherwise.
+     * @return bool returns true if this is a PUT request, false otherwise.
      */
     public function isPut()
     {
@@ -449,8 +446,7 @@ class Request implements RequestInterface
     /**
      * Returns true if a DELETE request was made, false otherwise.
      *
-     * @return bool returns true if this is a DELETE request,
-     *              false otherwise.
+     * @return bool returns true if this is a DELETE request, false otherwise.
      */
     public function isDelete()
     {
@@ -471,8 +467,7 @@ class Request implements RequestInterface
     /**
      * Returns true if an AJAX request was made, false otherwise.
      *
-     * @return bool returns true if this is an AJAX request,
-     *              false otherwise.
+     * @return bool returns true if this is an AJAX request, false otherwise.
      */
     public function isXmlHttpRequest()
     {
@@ -483,8 +478,7 @@ class Request implements RequestInterface
     /**
      * Returns true if the request made by HEAD, false otherwise.
      *
-     * @return bool returns true if this request was made by HEAD,
-     *              false otherwise.
+     * @return bool returns true if this request was made by HEAD, false otherwise.
      */
     public function isHead()
     {
@@ -527,8 +521,7 @@ class Request implements RequestInterface
     }
     
     /**
-     * Returns the domain part from this request which may also include the port
-     * if the server runs on a port other than 80.
+     * Returns the domain part from this request which may also include the port if the server runs on a port other than 80.
      *
      * @return string return the domain part from this request.
      */
