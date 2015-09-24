@@ -37,14 +37,37 @@
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  */
 
-namespace Spark\Io\Exception;
+namespace Spark\Io\Stream;
 
 /**
- * Signals that an input/ouput exception has occurred.
+ * The StreamInterface is thin wrapper around a PHP stream and accepts one or more bytes which 
+ * will be written to the underlying PHP stream once {@link StreamInterface::flush()} method
+ * is called.
  *
  * @author Chris Harris <c.harris@hotmail.com>
  * @version 1.0.0
  * @since 1.0.0
  */
-class IOException extends \Exception
-{}
+interface StreamInterface 
+{
+    /** 
+     * Write the specified string to the stream.
+     *
+     * @param string $str the string that is written to the stream.
+     */
+    public function write($str);
+    
+    /**
+     * Flush the stream and write any remaining bytes to their intended destination.
+     *
+     * @return void
+     */
+    public function flush();
+    
+    /**
+     * Close and flush the stream. A closed stream cannot be reopened. 
+     *
+     * return void
+     */
+    public function close();
+}
