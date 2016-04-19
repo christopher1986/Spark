@@ -132,7 +132,6 @@ class Statement implements StatementInterface, IteratorAggregate
         $results = array();
         if ($this->isPrepared) {
             $results = $this->connection->getResource()->get_row($this->preparedQuery, $type, $rowOffset);
-            ++$this->numQueries;
         }
             
         return $results;
