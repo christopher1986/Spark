@@ -305,7 +305,7 @@ class Statement implements StatementInterface, IteratorAggregate
      * @return array the merger of the given parameters with the already bounded parameters.
      * @throws RuntimeException if the given parameters contains keys for which there are no parameters.
      */
-    private function mergeWithBoundedParams(array $params, $type = Statement::PARAM_STR)
+    private function mergeWithBoundedParams(array $params, $type = Parameter::PARAM_STR)
     {
         $diff = array_diff_key($params, $this->params);
         if (!empty($diff)) {
