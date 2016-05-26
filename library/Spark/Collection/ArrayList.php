@@ -179,7 +179,7 @@ class ArrayList extends AbstractList
             throw new \InvalidArgumentException(sprintf(
                 '%s: expects an integer argument; received "%s"',
                 __METHOD__,
-                (is_object($fromIndex) ? get_class($fromIndex) : gettype($fromIndex))
+                (is_object($index) ? get_class($index) : gettype($index))
             ));
         } else if ($index < 0 || $index >= $this->count()) {
             throw new \OutOfRangeException(sprintf(
