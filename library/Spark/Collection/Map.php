@@ -120,7 +120,7 @@ class Map implements MapInterface
      */
     public function containsValue($value)
     {
-        return (!$this->isEmpty() && (false !== array_search($value, $this->items));
+        return (!$this->isEmpty()) && (false !== array_search($value, $this->items));
     }
     
     /**
